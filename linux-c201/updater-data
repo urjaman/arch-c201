@@ -1,0 +1,5 @@
+UPSTREAM=https://github.com/archlinuxarm/PKGBUILDs
+UPSTREAM_BRANCH=master
+UPSTREAM_DIR=core/linux-armv7
+PATCH_PARM=-p3
+
