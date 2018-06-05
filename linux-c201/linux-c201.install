@@ -1,7 +1,7 @@
 # arg 1:  the new package version
 # arg 2:  the old package version
 
-KERNEL_NAME=-armv7
+KERNEL_NAME=-c201
 KERNEL_VERSION=4.16.0-1-ARCH
 
 post_install () {

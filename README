@@ -1,12 +1,40 @@
 This is just assorted stuff i have for having a more usable system on _my_ C201 w/ arch...
+---
 
-# for 3.14
+For keyboard: i have my .Xmodmap in this repo... note that i'm finnish with US keyboard C201s :P
+TODO: Make it saner and more like ChromeOS ...
+
+
+# For "okay" X11 perf:
+pacman -R xf86-video-armsoc-rockchip
+pacman -S xf86-video-fbturbo-git 
+
+
+For sound:
+i made a systemd service for running alsaucm so you hopefully dont burn your speakers...
+
+# 3.14
 if you want to run that, copy the ROCKCHIPI2S alsa ucm
-data from ChromeOS and adjust alsaucm-setup.service accordingly
+data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented out there)
 
 # 4.16
-for blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
+for working sound with pulseaudio: check my alsa ucm HiFi.conf in this repo
+TODO: How does pavucontrol figure out the configuration names?
+(you'll get "n/a" and "n/a (unplugged)" without a headset :P, figure it out from that lol..)
+
+
+For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
 /lib/firmware/brcm/brcmfmac4354-sdio.bin 
 /lib/firmware/brcm/brcmfmac4354-sdio.txt
-(linux-firmware had a different bin, but i decided to trust ChromeOS instead...)
+(linux-firmware had a different bin and no .txt (that i guess was necessary), but i decided to trust ChromeOS instead...)
+linux-firmware updates will likely walk over the bin though, ugh.
+# chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
+Tada. Idk if that'll work but maybe :P
+
+
+
+Kernel: the arch linux-armv7-chromebook will work, but...
+lets just say, it's not the best because it's way too generic (loading rockchip-drm as a module? really...).
+I reconfigured the arch kernel so i'm keeping that in linux-c201 here...
+TODO: How to (semi-)automate keeping the kernel updated?
 
