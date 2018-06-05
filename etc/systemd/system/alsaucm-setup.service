@@ -1,0 +1,12 @@
+[Unit]
+Description=ASUS C201 alsaucm 
+
+[Service]
+Type=oneshot
+#ExecStart=/usr/bin/alsaucm -c ROCKCHIP-I2S set _verb HiFi
+ExecStart=/usr/bin/alsaucm -c VEYRON-I2S set _verb HiFi
+ExecStop=/bin/true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

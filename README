@@ -1,0 +1,12 @@
+This is just assorted stuff i have for having a more usable system on _my_ C201 w/ arch...
+
+# for 3.14
+if you want to run that, copy the ROCKCHIPI2S alsa ucm
+data from ChromeOS and adjust alsaucm-setup.service accordingly
+
+# 4.16
+for blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
+/lib/firmware/brcm/brcmfmac4354-sdio.bin 
+/lib/firmware/brcm/brcmfmac4354-sdio.txt
+(linux-firmware had a different bin, but i decided to trust ChromeOS instead...)
+
