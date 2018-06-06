@@ -19,8 +19,7 @@ data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented 
 
 # 4.16
 for working sound with pulseaudio: check my alsa ucm HiFi.conf in this repo
-TODO: How does pavucontrol figure out the configuration names?
-(you'll get "n/a" and "n/a (unplugged)" without a headset :P, figure it out from that lol..)
+(How does pavucontrol figure out the configuration names? yup, it's the Comment field for the devices..)
 
 
 For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
