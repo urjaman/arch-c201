@@ -38,8 +38,8 @@ keycode  69 = F5 F5 F3 F3 F3 F3 XF86Switch_VT_3
 keycode  70 = F11 F11 F4 F4 F4 F4 XF86Switch_VT_4
 keycode  71 = F4 F4 F5 F5 F5 F5 XF86Switch_VT_5
 
-keycode  72 = XF86MonBrightnessDown XF86MonBrightnessDown F6 F6 F6 F6 XF86Switch_VT_6
-keycode  73 = XF86MonBrightnessUp XF86MonBrightnessUp F7 F7 F7 F7 XF86Switch_VT_7
+keycode  72 = F13 F13 F6 F6 F6 F6 XF86Switch_VT_6
+keycode  73 = F14 F14 F7 F7 F7 F7 XF86Switch_VT_7
 keycode  74 = XF86AudioMute XF86AudioMute F8 F8 F8 F8 XF86Switch_VT_8
 keycode  75 = XF86AudioLowerVolume XF86AudioLowerVolume F9 F9 F9 F9 XF86Switch_VT_9
 keycode  76 = XF86AudioRaiseVolume XF86AudioRaiseVolume F10 F10 F10 F10 XF86Switch_VT_10
