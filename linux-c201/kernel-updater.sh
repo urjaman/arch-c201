@@ -32,7 +32,7 @@ do
 done
 
 #set the config to what it was before in the upstream so patches apply nicely
-cp config config.my
+cp $BASEDIR/config $BASEDIR/config.my
 cp config.old $BASEDIR/config
 git rev-parse HEAD > $BASEDIR/updater-new-hash
 cd $BASEDIR

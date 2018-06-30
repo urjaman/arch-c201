@@ -1,5 +1,8 @@
-# ARMv7 multi-platform (modded for C201-only by <urjaman@gmail.com> )
+# ARMv7 ex-multi-platform modified for C201-only
+# Original by:
 # Maintainer: Kevin Mihelich <kevin@archlinuxarm.org>
+# Modified by:
+# Maintainer: Urja Rannikko <urjaman@gmail.com>
 
 buildarch=4
 
@@ -7,17 +10,16 @@ pkgbase=linux-c201
 _srcname=linux-4.17
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.17.0
-
+pkgver=4.17.2
 pkgrel=1
-rcnrel=armv7-x0
+rcnrel=armv7-x3
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
-        #"http://www.kernel.org/pub/linux/kernel/v4.x/patch-${pkgver}.xz"
+        "http://www.kernel.org/pub/linux/kernel/v4.x/patch-${pkgver}.xz"
         "http://rcn-ee.com/deb/sid-armhf/v${pkgver}-${rcnrel}/patch-${pkgver%.0}-${rcnrel}.diff.gz"
         '0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch'
         '0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch'
@@ -40,7 +42,8 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         'config')
 
 md5sums=('5bb13a03274b66b56c85b26682e407d7'
-         'b9e5c7fbb3025d4ec02b61319a1a9fad'
+         'dfd97ddacecaaec8ca7b697428274b2a'
+         '123c2ce4ccc7e02f7d4d8c0f7bf4e398'
          '659aa5898b6182ba855dff9584d0b77b'
          '09112f7298d00fb453b6789286d01334'
          'ada6bd5d1519869a0f60cc3523ea2394'
@@ -65,25 +68,25 @@ prepare() {
   cd "${srcdir}/${_srcname}"
 
   # add upstream patch
-  #git apply --whitespace=nowarn ../patch-${pkgver}
+  GIT_DIR=/tmp git apply --whitespace=nowarn ../patch-${pkgver}
 
   # RCN patch
-  git apply ../patch-${pkgver%.0}-${rcnrel}.diff
+  GIT_DIR=/tmp git apply ../patch-${pkgver%.0}-${rcnrel}.diff
 
   # ALARM patches
-  git apply ../0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch
-  git apply ../0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch
-  git apply ../0003-SMILE-Plug-device-tree-file.patch
-  git apply ../0004-fix-mvsdio-eMMC-timing.patch
-  git apply ../0005-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
-  git apply ../0006-set-default-cubietruck-led-triggers.patch
-  git apply ../0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch
-  git apply ../0008-ARM-dove-enable-ethernet-on-D3Plug.patch
-  git apply ../0009-power-add-power-sequence-library.patch
-  git apply ../0010-usb-core-add-power-sequence-handling-for-USB-devices.patch
-  git apply ../0011-ARM-dts-imx6qdl-Enable-usb-node-children-with-reg.patch
-  git apply ../0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch
-  git apply ../0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch
+  GIT_DIR=/tmp git apply ../0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch
+  GIT_DIR=/tmp git apply ../0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch
+  GIT_DIR=/tmp git apply ../0003-SMILE-Plug-device-tree-file.patch
+  GIT_DIR=/tmp git apply ../0004-fix-mvsdio-eMMC-timing.patch
+  GIT_DIR=/tmp git apply ../0005-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
+  GIT_DIR=/tmp git apply ../0006-set-default-cubietruck-led-triggers.patch
+  GIT_DIR=/tmp git apply ../0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch
+  GIT_DIR=/tmp git apply ../0008-ARM-dove-enable-ethernet-on-D3Plug.patch
+  GIT_DIR=/tmp git apply ../0009-power-add-power-sequence-library.patch
+  GIT_DIR=/tmp git apply ../0010-usb-core-add-power-sequence-handling-for-USB-devices.patch
+  GIT_DIR=/tmp git apply ../0011-ARM-dts-imx6qdl-Enable-usb-node-children-with-reg.patch
+  GIT_DIR=/tmp git apply ../0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch
+  GIT_DIR=/tmp git apply ../0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch
 
   cat "${srcdir}/config" > ./.config
 
@@ -109,7 +112,7 @@ build() {
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
-  #cp ./.config ../${pkgbase}.config
+  cp ./.config ../${pkgbase}.config
 
   ####################
   # stop here
