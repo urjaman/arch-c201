@@ -17,9 +17,9 @@ i made a systemd service for running alsaucm so you hopefully dont burn your spe
 if you want to run that, copy the ROCKCHIPI2S alsa ucm
 data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented out there)
 
-# 4.16
+# 4.x
 for working sound with pulseaudio: check my alsa ucm HiFi.conf in this repo
-(How does pavucontrol figure out the configuration names? yup, it's the Comment field for the devices..)
+N.B. This HiFi.conf patch has been upstreamed, and will likely be in the next alsa-lib release (v1.1.7 maybe).
 
 
 For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
@@ -37,3 +37,7 @@ lets just say, it's not the best because it's way too generic (loading rockchip-
 I reconfigured the arch kernel so i'm keeping that in linux-c201 here...
 TODO: How to (semi-)automate keeping the kernel updated?
 
+Backlight controls:
+I have an udev ruleset to make it accessible for video group members,
+and xbindkeys config + scripts to adjust it. These are just one way to do it,
+but i really really wanted control of the adjustment curve to myself, so scripting works for that.
