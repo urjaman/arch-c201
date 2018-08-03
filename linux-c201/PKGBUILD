@@ -10,9 +10,9 @@ pkgbase=linux-c201
 _srcname=linux-4.17
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.17.2
+pkgver=4.17.11
 pkgrel=1
-rcnrel=armv7-x3
+rcnrel=armv7-x11
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
@@ -34,6 +34,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         '0011-ARM-dts-imx6qdl-Enable-usb-node-children-with-reg.patch'
         '0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch'
         '0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch'
+        '0014-ARM-mvebu-declare-asm-symbols-as-character-arrays-in.patch'
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -42,27 +43,28 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         'config')
 
 md5sums=('5bb13a03274b66b56c85b26682e407d7'
-         'dfd97ddacecaaec8ca7b697428274b2a'
-         '123c2ce4ccc7e02f7d4d8c0f7bf4e398'
-         '659aa5898b6182ba855dff9584d0b77b'
-         '09112f7298d00fb453b6789286d01334'
-         'ada6bd5d1519869a0f60cc3523ea2394'
-         '7cf7295dd4150ecc78d9a37156946286'
-         'ff1771ffab749185fc5a0df1bd78ce4f'
-         '6580171cfdb1bca4f9e901be68aeeed0'
-         '2f3ad2a6d64ae13f6d80046efa067050'
-         'b8653cacf717217278c649bd2dea0f20'
-         '61f629a249a38aef979cab2be4d7bb7f'
-         '7e20b2245d031eb8443b040dac280a13'
-         'a4d211d0d0920f6f529c22273e1c4708'
-         '8b7f6296bb24f5d6b1d2088cd0fdcb79'
-         '52e2a87d059ea401640195b9f9253673'
+         'd11e0c49f8381d0656f0838310f27a0f'
+         '78d5dc3c3ed1e4436538394e0ba4ae5d'
+         '2ab00dfbba67e6411f7d840261079533'
+         'c8484367f1bd02ebf2fc1b9cdf3e2004'
+         'fa2402a5d90d651298d1bae0bebf785d'
+         '90e45476dfbbff52b921546f68ee4d78'
+         '32ddf11e2f4c66c474325037846e67a2'
+         '9423cfead77b13c537261cef1d8d068f'
+         'c16432d5a2cfedb5f8e924b6c23c8ed7'
+         '8cc861b5ee64aabd71cd4e97f79e6177'
+         'e83a03c82d1f9f9a3f9c796808c4160b'
+         'f14cbc2a326c7735d226a35039f3747d'
+         'e31b9705491a6bd8aad0442e248019e0'
+         'c414fe8e3ba3c180eaa54c9ebc5636aa'
+         'c6482625252e4051a144c6f7a9add062'
+         '480131c4aa1b4675cee89516bbd5c11f'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
          '584777ae88bce2c5659960151b64c7d8'
          'fb034fe5f2e28a4cce30ae2d8cf6be3c'
          '79fa396e3f9a09a85156d6d7c2d34b58'
-	 'SKIP')
+         'SKIP')
 
 prepare() {
   cd "${srcdir}/${_srcname}"
@@ -87,6 +89,7 @@ prepare() {
   GIT_DIR=/tmp git apply ../0011-ARM-dts-imx6qdl-Enable-usb-node-children-with-reg.patch
   GIT_DIR=/tmp git apply ../0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch
   GIT_DIR=/tmp git apply ../0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch
+  GIT_DIR=/tmp git apply ../0014-ARM-mvebu-declare-asm-symbols-as-character-arrays-in.patch
 
   cat "${srcdir}/config" > ./.config
 
