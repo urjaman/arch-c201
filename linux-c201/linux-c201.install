@@ -2,7 +2,7 @@
 # arg 2:  the old package version
 
 KERNEL_NAME=-c201
-KERNEL_VERSION=4.17.11-1-ARCH
+KERNEL_VERSION=4.18.1-1-ARCH
 
 post_install () {
   # updating module dependencies
