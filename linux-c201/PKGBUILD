@@ -35,6 +35,8 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         '0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch'
         '0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch'
         '0014-ARM-mvebu-declare-asm-symbols-as-character-arrays-in.patch'
+	'0020-clk-rockchip-HDMI-clock-improvements-from-ChromeOS-3.patch'
+	'0021-drm-rockchip-dw_hdmi-rockchip-clock-improvements-fro.patch'
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -59,12 +61,15 @@ md5sums=('bee5fe53ee1c3142b8f0c12c0d3348f9'
          'eb51f5bbcf5b38956a0ba931d7898f07'
          'cd9f373ec6e45e99610c9892a8e38100'
          '8b896e19eac2b3bff797c48e737a166b'
+         '22f62d8236eae4514bb1c4e5f0abde8f'
+         'c2628bcc70d1d26c1f2be92b0dfe98e3'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
          '584777ae88bce2c5659960151b64c7d8'
          'fb034fe5f2e28a4cce30ae2d8cf6be3c'
          '79fa396e3f9a09a85156d6d7c2d34b58'
          'SKIP')
+
 
 prepare() {
   cd "${srcdir}/${_srcname}"
@@ -90,6 +95,8 @@ prepare() {
   GIT_DIR=/tmp git apply ../0012-ARM-dts-imx6qdl-udoo.dtsi-fix-onboard-USB-HUB-proper.patch
   GIT_DIR=/tmp git apply ../0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch
   GIT_DIR=/tmp git apply ../0014-ARM-mvebu-declare-asm-symbols-as-character-arrays-in.patch
+  GIT_DIR=/tmp git apply ../0020-clk-rockchip-HDMI-clock-improvements-from-ChromeOS-3.patch
+  GIT_DIR=/tmp git apply ../0021-drm-rockchip-dw_hdmi-rockchip-clock-improvements-fro.patch
 
   cat "${srcdir}/config" > ./.config
 

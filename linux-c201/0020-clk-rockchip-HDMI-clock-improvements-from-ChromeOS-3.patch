@@ -1,0 +1,93 @@
+From bd771227fcb7b285c719aff9ac1f317f62f12532 Mon Sep 17 00:00:00 2001
+From: Urja Rannikko <urjaman@gmail.com>
+Date: Wed, 22 Aug 2018 18:36:05 +0000
+Subject: [PATCH 1/2] clk: rockchip: HDMI clock improvements from ChromeOS 3.14
+
+This contains traces of 24 commits from the ChromeOS tree
+which in general seem to be rather well tested.
+
+CHROMIUM: clk: rockchip: Use a better jitter clock for 300MHz PLL
+CHROMIUM: clk: rockchip: Add 160 MHz for 32 MHz HDMI
+CHROMIUM: clk: rockchip: Add high Fvco 308 MHz rate for 154 MHz HDMI
+CHROMIUM: clk: rockchip: Add high Fvco 324 MHz rate for 162 MHz HDMI
+CHROMIUM: clk: rockchip: Add highish Fvco 273.6 MHz and 238 MHz
+CHROMIUM: clk: rockchip: Add high Fvco 292.5 MHz rate for 146.25 MHz HDMI
+CHROMIUM: clk: rockchip: Add 270 MHz for 33.75 MHz HDMI (and 135 MHz)
+CHROMIUM: clk: rockchip: Add 243.428571 MHz for 121.75 MHz HDMI
+CHROMIUM: clk: rockchip: Add 195.428571 MHz for 97.75 MHz HDMI
+CHROMIUM: clk: rockchip: Add 256.5 MHz for 85.5 MHz HDMI
+CHROMIUM: clk: rockchip: Add 157.5 MHz for 78.75 MHz HDMI
+CHROMIUM: clk: rockchip: Add 394 MHz for 78.8 MHz HDMI
+CHROMIUM: clk: rockchip: Add 621 MHz to better approx 88.75 HDMI
+CHROMIUM: clk: rockchip: Add low jitter 213 MHz for better 71 MHz HDMI
+CHROMIUM: clk: rockchip: Add low jitter 250.5 MHz for better 83.5 MHz HDMI
+CHROMIUM: clk: rockchip: Add low jitter 428 MHz for better 25.175 HDMI
+CHROMIUM: clk: rockchip: Add low jitter 273 MHz for better 68.25 HDMI
+CHROMIUM: clk: rockchip: Add low jitter 356 MHz for better 118.68 HDMI
+CHROMIUM: clk: rockchip: Bump up Fvco for 216 MHz for 72 MHz HDMI
+CHROMIUM: clk: rockchip: Add 297.75 MHz PLL for better 74.44 HDMI approx
+CHROMIUM: clk: rockchip: Add 266.25 MHz PLL to make 88.75 MHz exactly
+CHROMIUM: clk: rockchip: Add 219.75 MHz PLL to make 73.25 MHz exactly
+CHROMIUM: clk: rockchip: Add 293.25 MHz PLL to make 97.75 MHz exactly
+CHROMIUM: clk: rockchip: Add 303 MHz PLL to make 101 MHz exactly
+
+Signed-off-by: Urja Rannikko <urjaman@gmail.com>
+---
+ drivers/clk/rockchip/clk-rk3288.c | 29 +++++++++++++++++++++++++----
+ 1 file changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/clk/rockchip/clk-rk3288.c b/drivers/clk/rockchip/clk-rk3288.c
+index 450de24a..0c2ca3ff 100644
+--- a/drivers/clk/rockchip/clk-rk3288.c
++++ b/drivers/clk/rockchip/clk-rk3288.c
+@@ -83,22 +83,43 @@ static struct rockchip_pll_rate_table rk3288_pll_rates[] = {
+ 	RK3066_PLL_RATE( 768000000, 1, 64, 2),
+ 	RK3066_PLL_RATE( 742500000, 8, 495, 2),
+ 	RK3066_PLL_RATE( 696000000, 1, 58, 2),
++	RK3066_PLL_RATE_NB(621000000, 1, 207, 8, 1),   /* Fvco = 4.968 GHz */
+ 	RK3066_PLL_RATE( 600000000, 1, 50, 2),
+ 	RK3066_PLL_RATE_NB(594000000, 1, 198, 8, 1),
+ 	RK3066_PLL_RATE( 552000000, 1, 46, 2),
+ 	RK3066_PLL_RATE( 504000000, 1, 84, 4),
+ 	RK3066_PLL_RATE( 500000000, 3, 125, 2),
+ 	RK3066_PLL_RATE( 456000000, 1, 76, 4),
++	RK3066_PLL_RATE( 428000000, 1, 107, 6),        /* Fvco = 2.568 GHz */
+ 	RK3066_PLL_RATE( 408000000, 1, 68, 4),
+ 	RK3066_PLL_RATE( 400000000, 3, 100, 2),
++	RK3066_PLL_RATE_NB( 394000000, 1, 197, 12, 1), /* Fvco = 4.728 GHz */
+ 	RK3066_PLL_RATE( 384000000, 2, 128, 4),
+ 	RK3066_PLL_RATE( 360000000, 1, 60, 4),
++	RK3066_PLL_RATE_NB( 356000000, 1, 178, 12, 1), /* Fvco = 4.272 GHz */
++	RK3066_PLL_RATE_NB( 324000000, 1, 189, 14, 1), /* Fvco = 4.536 GHz */
+ 	RK3066_PLL_RATE( 312000000, 1, 52, 4),
+-	RK3066_PLL_RATE( 300000000, 1, 50, 4),
+-	RK3066_PLL_RATE( 297000000, 2, 198, 8),
++	RK3066_PLL_RATE_NB( 308000000, 1, 154, 12, 1), /* Fvco = 3.696 GHz */
++	RK3066_PLL_RATE_NB( 303000000, 1, 202, 16, 1), /* Fvco = 4.848 GHz */
++	RK3066_PLL_RATE( 300000000, 1, 75, 6),
++	RK3066_PLL_RATE_NB( 297750000, 2, 397, 16, 1), /* Fvco = 4.764 GHz */
++	RK3066_PLL_RATE_NB( 293250000, 2, 391, 16, 1), /* Fvco = 4.692 GHz */
++	RK3066_PLL_RATE_NB( 292500000, 1, 195, 16, 1), /* Fvco = 4.680 GHz */
++	RK3066_PLL_RATE( 273600000, 1, 114, 10),       /* Fvco = 2.736 GHz */
++	RK3066_PLL_RATE_NB( 273000000, 1, 182, 16, 1), /* Fvco = 4.368 GHz */
++	RK3066_PLL_RATE_NB( 270000000, 1, 180, 16, 1), /* Fvco = 4.320 GHz */
++	RK3066_PLL_RATE_NB( 266250000, 2, 355, 16, 1), /* Fvco = 4.260 GHz */
++	RK3066_PLL_RATE_NB( 256500000, 1, 171, 16, 1), /* Fvco = 4.104 GHz */
+ 	RK3066_PLL_RATE( 252000000, 1, 84, 8),
+-	RK3066_PLL_RATE( 216000000, 1, 72, 8),
+-	RK3066_PLL_RATE( 148500000, 2, 99, 8),
++	RK3066_PLL_RATE_NB( 250500000, 1, 167, 16, 1), /* Fvco = 4.008 GHz */
++	RK3066_PLL_RATE_NB( 243428571, 1, 142, 14, 1), /* Fvco = 3.408 GHz */
++	RK3066_PLL_RATE( 238000000, 1, 119, 12),       /* Fvco = 2.856 GHz */
++	RK3066_PLL_RATE_NB( 219750000, 2, 293, 16, 1), /* Fvco = 3.516 GHz */
++	RK3066_PLL_RATE_NB( 216000000, 1, 144, 16, 1), /* Fvco = 3.456 GHz */
++	RK3066_PLL_RATE_NB( 213000000, 1, 142, 16, 1), /* Fvco = 3.408 GHz */
++	RK3066_PLL_RATE( 195428571, 1, 114, 14),       /* Fvco = 2.736 GHz */
++	RK3066_PLL_RATE( 160000000, 1, 80, 12),
++	RK3066_PLL_RATE( 157500000, 1, 105, 16),       /* Fvco = 2.520 GHz */
+ 	RK3066_PLL_RATE( 126000000, 1, 84, 16),
+ 	RK3066_PLL_RATE(  48000000, 1, 64, 32),
+ 	{ /* sentinel */ },
+-- 
+2.18.0
+
