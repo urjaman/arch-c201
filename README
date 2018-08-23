@@ -7,7 +7,12 @@ TODO: Make it saner and more like ChromeOS ...
 
 # For "okay" X11 perf:
 pacman -R xf86-video-armsoc-rockchip
+You can use fbturbo if you like, it works and is pretty fast:
 pacman -S xf86-video-fbturbo-git 
+OTOH 
+If you want to have multi-head support, the modesetting (KMS) driver that comes
+with xorg-server works if you disable glamor - there is a xorg.conf.d
+fragment for that in this repo
 
 
 For sound:
