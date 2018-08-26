@@ -205,14 +205,14 @@ index 0c2ca3ff..dad66c4a 100644
  	if (IS_ERR(ctx)) {
  		pr_err("%s: rockchip clk init failed\n", __func__);
 diff --git a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
-index b982c76e..483fc253 100644
+index b982c76e..1c82024e 100644
 --- a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
 +++ b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
 @@ -49,6 +49,8 @@ struct rockchip_hdmi {
  	struct clk *vpll_clk;
  	struct clk *grf_clk;
  	struct dw_hdmi *hdmi;
-+	const u32* rates;
++	u32* rates;
 +	u32 rates_cnt;
  };
  
@@ -243,11 +243,11 @@ index b982c76e..483fc253 100644
  
  	hdmi->regmap = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
  	if (IS_ERR(hdmi->regmap)) {
-@@ -237,6 +240,26 @@ static int rockchip_hdmi_parse_dt(struct rockchip_hdmi *hdmi)
+@@ -237,15 +240,36 @@ static int rockchip_hdmi_parse_dt(struct rockchip_hdmi *hdmi)
  		return PTR_ERR(hdmi->grf_clk);
  	}
  
-+	if ((rates_cnt = of_property_count_u32_elems(np, "rockchip,hdmi-rates") > 0) {
++	if ((rates_cnt = of_property_count_u32_elems(np, "rockchip,hdmi-rates")) > 0) {
 +		int rv;
 +		u32 *rates = devm_kmalloc_array(hdmi->dev, rates_cnt, sizeof(u32), GFP_KERNEL);
 +		if (!rates)
@@ -270,20 +270,19 @@ index b982c76e..483fc253 100644
  	return 0;
  }
  
-@@ -244,8 +267,11 @@ static enum drm_mode_status
- dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
+ static enum drm_mode_status
+-dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
++dw_hdmi_rockchip_encoder_mode_valid(struct drm_encoder *encoder,
  			    const struct drm_display_mode *mode)
  {
-+	/* We are the only encoder for the connector. */
-+	struct rockchip_hdmi *hdmi = to_rockchip_hdmi(connector->best_encoder);
++	struct rockchip_hdmi *hdmi = to_rockchip_hdmi(encoder);
  	int pclk = mode->clock * 1000;
 -	int num_rates = ARRAY_SIZE(dw_hdmi_rates);
-+	
 +	int num_rates = hdmi->rates_cnt;
  	int i;
  
  	/*
-@@ -259,8 +285,8 @@ dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
+@@ -259,8 +283,8 @@ dw_hdmi_rockchip_mode_valid(struct drm_connector *connector,
  	for (i = 0; i < num_rates; i++) {
  		int slop = CLK_SLOP(pclk);
  
@@ -294,7 +293,7 @@ index b982c76e..483fc253 100644
  			return MODE_OK;
  	}
  
-@@ -288,14 +314,14 @@ dw_hdmi_rockchip_encoder_mode_fixup(struct drm_encoder *encoder,
+@@ -288,14 +312,14 @@ dw_hdmi_rockchip_encoder_mode_fixup(struct drm_encoder *encoder,
  	int i;
  
  	/* Pick the best clock */
@@ -312,21 +311,43 @@ index b982c76e..483fc253 100644
  
  			/* Bail early if we're exact */
  			if (best_diff == 0)
-@@ -472,6 +498,7 @@ static int dw_hdmi_rockchip_bind(struct device *dev, struct device *master,
+@@ -365,6 +389,7 @@ dw_hdmi_rockchip_encoder_atomic_check(struct drm_encoder *encoder,
+ }
+ 
+ static const struct drm_encoder_helper_funcs dw_hdmi_rockchip_encoder_helper_funcs = {
++	.mode_valid = dw_hdmi_rockchip_encoder_mode_valid,
+ 	.mode_fixup = dw_hdmi_rockchip_encoder_mode_fixup,
+ 	.mode_set   = dw_hdmi_rockchip_encoder_mode_set,
+ 	.enable     = dw_hdmi_rockchip_encoder_enable,
+@@ -379,7 +404,6 @@ static struct rockchip_hdmi_chip_data rk3288_chip_data = {
+ };
+ 
+ static const struct dw_hdmi_plat_data rk3288_hdmi_drv_data = {
+-	.mode_valid = dw_hdmi_rockchip_mode_valid,
+ 	.mpll_cfg   = rockchip_mpll_cfg,
+ 	.cur_ctr    = rockchip_cur_ctr,
+ 	.phy_config = rockchip_phy_config,
+@@ -393,7 +417,6 @@ static struct rockchip_hdmi_chip_data rk3399_chip_data = {
+ };
+ 
+ static const struct dw_hdmi_plat_data rk3399_hdmi_drv_data = {
+-	.mode_valid = dw_hdmi_rockchip_mode_valid,
+ 	.mpll_cfg   = rockchip_mpll_cfg,
+ 	.cur_ctr    = rockchip_cur_ctr,
+ 	.phy_config = rockchip_phy_config,
+@@ -472,6 +495,7 @@ static int dw_hdmi_rockchip_bind(struct device *dev, struct device *master,
  	 */
  	if (IS_ERR(hdmi->hdmi)) {
  		ret = PTR_ERR(hdmi->hdmi);
-+		devm_kfree(hdmi->rates);
++		devm_kfree(hdmi->dev, hdmi->rates);
  		drm_encoder_cleanup(encoder);
  		clk_disable_unprepare(hdmi->vpll_clk);
  	}
-@@ -483,7 +510,8 @@ static void dw_hdmi_rockchip_unbind(struct device *dev, struct device *master,
- 				    void *data)
+@@ -484,6 +508,7 @@ static void dw_hdmi_rockchip_unbind(struct device *dev, struct device *master,
  {
  	struct rockchip_hdmi *hdmi = dev_get_drvdata(dev);
--
-+	
-+	devm_kfree(hdmi->rates);
+ 
++	devm_kfree(hdmi->dev, hdmi->rates);
  	dw_hdmi_unbind(hdmi->hdmi);
  	clk_disable_unprepare(hdmi->vpll_clk);
  }
