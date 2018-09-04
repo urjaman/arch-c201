@@ -46,3 +46,7 @@ Backlight controls:
 I have an udev ruleset to make it accessible for video group members,
 and xbindkeys config + scripts to adjust it. These are just one way to do it,
 but i really really wanted control of the adjustment curve to myself, so scripting works for that.
+
+Note: i also added volume controls to the .xbindkeysrc so i dont need the xfce pulseaudio widget - it's looking
+like that was giving me problems with the panel capturing the keyboard...
+(i use pasystray instead now, but it doesnt do keyboard controls).
