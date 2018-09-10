@@ -10,9 +10,9 @@ pkgbase=linux-c201
 _srcname=linux-4.18
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.18.1
-pkgrel=5
-rcnrel=armv7-x3
+pkgver=4.18.5
+pkgrel=2
+rcnrel=armv7-x6
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
@@ -68,6 +68,7 @@ prepare() {
   GIT_DIR=/tmp git apply ../0013-ARM-dts-imx6q-evi-Fix-onboard-hub-reset-line.patch
   GIT_DIR=/tmp git apply ../0014-ARM-mvebu-declare-asm-symbols-as-character-arrays-in.patch
 
+  # arch-c201 patches
   GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-clock-hacks-combined.patch
 
   cat "${srcdir}/config" > ./.config
@@ -106,7 +107,7 @@ build() {
   #yes "" | make config
 
   # build!
-  make -j4 ${MAKEFLAGS} zImage modules dtbs
+  make -j5 ${MAKEFLAGS} zImage modules dtbs
 }
 
 _package() {
@@ -316,8 +317,8 @@ for _p in ${pkgname[@]}; do
 done
 
 md5sums=('bee5fe53ee1c3142b8f0c12c0d3348f9'
-         'bc8d68c9508576e62008c186a4c13668'
-         'eeb65d78a2d5e2799a50e2effc2a6aad'
+         'c49635fe383e69a7a134d633912d646a'
+         'f69b1e09bfe4bb4044f1dafec3ae1647'
          'fb218c1825366e722be83dd705d02822'
          'bfeb8670a65fc8c14a7076ec623e9898'
          '1651316b545214bb346af28f3925ccd0'
@@ -338,4 +339,4 @@ md5sums=('bee5fe53ee1c3142b8f0c12c0d3348f9'
          '584777ae88bce2c5659960151b64c7d8'
          'fb034fe5f2e28a4cce30ae2d8cf6be3c'
          '79fa396e3f9a09a85156d6d7c2d34b58'
-         'ff7746c97c34d1c6c378d994bb6a72a8')
+         '7fc4574cf1f8425182727aa87bb1d33a')
