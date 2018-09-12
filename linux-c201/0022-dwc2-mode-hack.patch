@@ -1,0 +1,119 @@
+diff --git a/arch/arm/boot/dts/rk3288-veyron.dtsi b/arch/arm/boot/dts/rk3288-veyron.dtsi
+index 6e5bd8974f22..e58401644120 100644
+--- a/arch/arm/boot/dts/rk3288-veyron.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron.dtsi
+@@ -439,7 +439,7 @@
+ 
+ 	assigned-clocks = <&cru SCLK_USBPHY480M_SRC>;
+ 	assigned-clock-parents = <&usbphy0>;
+-	dr_mode = "host";
++	/* dr_mode = "host"; */
+ };
+ 
+ &vopb {
+diff --git a/drivers/usb/dwc2/core.c b/drivers/usb/dwc2/core.c
+index 1c36a6a9dd63..aadc28d36eb5 100644
+--- a/drivers/usb/dwc2/core.c
++++ b/drivers/usb/dwc2/core.c
+@@ -618,7 +618,7 @@ void dwc2_force_mode(struct dwc2_hsotg *hsotg, bool host)
+  *
+  * @hsotg: Programming view of DWC_otg controller
+  */
+-static void dwc2_clear_force_mode(struct dwc2_hsotg *hsotg)
++void dwc2_clear_force_mode(struct dwc2_hsotg *hsotg)
+ {
+ 	u32 gusbcfg;
+ 
+diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
+index 71b3b08ad516..2fa71fa0a370 100644
+--- a/drivers/usb/dwc2/core.h
++++ b/drivers/usb/dwc2/core.h
+@@ -1262,6 +1262,7 @@ int dwc2_exit_hibernation(struct dwc2_hsotg *hsotg, int rem_wakeup,
+ 
+ void dwc2_force_mode(struct dwc2_hsotg *hsotg, bool host);
+ void dwc2_force_dr_mode(struct dwc2_hsotg *hsotg);
++void dwc2_clear_force_mode(struct dwc2_hsotg *hsotg);
+ 
+ bool dwc2_is_controller_alive(struct dwc2_hsotg *hsotg);
+ 
+diff --git a/drivers/usb/dwc2/debugfs.c b/drivers/usb/dwc2/debugfs.c
+index d0bdb7997557..08d1bfc02acb 100644
+--- a/drivers/usb/dwc2/debugfs.c
++++ b/drivers/usb/dwc2/debugfs.c
+@@ -114,6 +114,55 @@ static const struct file_operations testmode_fops = {
+ 	.release	= single_release,
+ };
+ 
++static ssize_t cur_mode_write(struct file *file, const char __user *ubuf, size_t
++		count, loff_t *ppos)
++{
++	struct seq_file		*s = file->private_data;
++	struct dwc2_hsotg	*hsotg = s->private;
++	int mode = 0;
++	char			buf[32];
++
++	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
++		return -EFAULT;
++
++	if (!strncmp(buf, "device", 6))
++		mode = 1;
++	else if (!strncmp(buf, "host", 4))
++		mode = 2;
++	else
++		mode = 0; /* otg/clear */
++
++	dwc2_clear_force_mode(hsotg);
++	switch (mode) {
++		case 1: dwc2_force_mode(hsotg, false); break;
++		case 2: dwc2_force_mode(hsotg, true); break;
++	}
++	return count;
++}
++
++
++static int cur_mode_show(struct seq_file *s, void *unused)
++{
++	struct dwc2_hsotg *hsotg = s->private;
++	seq_puts(s, dwc2_is_device_mode(hsotg) ? "device\n" : "host\n");
++	return 0;
++}
++
++
++static int cur_mode_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, cur_mode_show, inode->i_private);
++}
++
++static const struct file_operations cur_mode_fops = {
++	.owner		= THIS_MODULE,
++	.open		= cur_mode_open,
++	.write		= cur_mode_write,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ /**
+  * state_show - debugfs: show overall driver and device state.
+  * @seq: The seq file to write to.
+@@ -302,6 +351,7 @@ static void dwc2_hsotg_create_debug(struct dwc2_hsotg *hsotg)
+ 	debugfs_create_file("state", 0444, root, hsotg, &state_fops);
+ 	debugfs_create_file("testmode", 0644, root, hsotg, &testmode_fops);
+ 	debugfs_create_file("fifo", 0444, root, hsotg, &fifo_fops);
++	debugfs_create_file("cur_mode", 0644, root, hsotg, &cur_mode_fops);
+ 
+ 	/* Create one file for each out endpoint */
+ 	for (epidx = 0; epidx < hsotg->num_of_eps; epidx++) {
+diff --git a/drivers/usb/dwc2/platform.c b/drivers/usb/dwc2/platform.c
+index 4c0819554bcd..e56f7e3e0e20 100644
+--- a/drivers/usb/dwc2/platform.c
++++ b/drivers/usb/dwc2/platform.c
+@@ -442,6 +442,8 @@ static int dwc2_driver_probe(struct platform_device *dev)
+ 	 * other time after this.
+ 	 */
+ 	dwc2_force_dr_mode(hsotg);
++	/* HACK: Always start in host mode, even if you think you're an otg device :P */
++	dwc2_force_mode(hsotg, true);
+ 
+ 	retval = dwc2_init_params(hsotg);
+ 	if (retval)
