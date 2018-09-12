@@ -95,7 +95,7 @@ build() {
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
-  cp ./.config ../${pkgbase}.config
+  cp ./.config ../../config
 
   ####################
   # stop here
