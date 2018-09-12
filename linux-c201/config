@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 4.18.7-2 Kernel Configuration
+# Linux/arm 4.18.7-3 Kernel Configuration
 #
 
 #
@@ -3769,10 +3769,8 @@ CONFIG_USB_DWC2=y
 #
 # CONFIG_USB_DWC2_PERIPHERAL is not set
 CONFIG_USB_DWC2_DUAL_ROLE=y
-CONFIG_USB_DWC2_DEBUG=y
-CONFIG_USB_DWC2_VERBOSE=y
+# CONFIG_USB_DWC2_DEBUG is not set
 # CONFIG_USB_DWC2_TRACK_MISSED_SOFS is not set
-# CONFIG_USB_DWC2_DEBUG_PERIODIC is not set
 # CONFIG_USB_CHIPIDEA is not set
 # CONFIG_USB_ISP1760 is not set
 
