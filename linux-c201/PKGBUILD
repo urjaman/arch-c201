@@ -11,7 +11,7 @@ _srcname=linux-4.18
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
 pkgver=4.18.7
-pkgrel=4
+pkgrel=1
 rcnrel=armv7-x7
 arch=('armv7h')
 url="http://www.kernel.org/"
@@ -92,7 +92,7 @@ build() {
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
-  #make menuconfig # CLI menu for configuration
+  @make menuconfig # CLI menu for configuration
   #make nconfig # new CLI menu for configuration
   #make xconfig # X-based configuration
   make oldconfig # using old config from previous kernel version
