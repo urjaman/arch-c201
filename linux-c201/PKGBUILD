@@ -10,9 +10,9 @@ pkgbase=linux-c201
 _srcname=linux-4.18
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.18.7
-pkgrel=1
-rcnrel=armv7-x7
+pkgver=4.18.8
+pkgrel=3
+rcnrel=armv7-x8
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
@@ -38,6 +38,8 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
 	'0020-RK3288-HDMI-clock-hacks-combined.patch'
 	'0021-usb-dwc2-disable-power-down-for-rockchip-and-amlogic.patch'
 	'0022-dwc2-mode-hack.patch'
+	'0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch'
+	'0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch'
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -47,7 +49,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
 
 prepare() {
   cd "${srcdir}/${_srcname}"
-
+  
   # add upstream patch
   GIT_DIR=/tmp git apply --whitespace=nowarn ../patch-${pkgver}
 
@@ -74,6 +76,8 @@ prepare() {
   GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-clock-hacks-combined.patch
   GIT_DIR=/tmp git apply ../0021-usb-dwc2-disable-power-down-for-rockchip-and-amlogic.patch
   GIT_DIR=/tmp git apply ../0022-dwc2-mode-hack.patch
+  GIT_DIR=/tmp git apply ../0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch
+  GIT_DIR=/tmp git apply ../0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch
 
   cat "${srcdir}/config" > ./.config
 
@@ -82,6 +86,7 @@ prepare() {
 
   # don't run depmod on 'make install'. We'll do this ourselves in packaging
   sed -i '2iexit 0' scripts/depmod.sh
+
 }
 
 build() {
@@ -92,7 +97,7 @@ build() {
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
-  @make menuconfig # CLI menu for configuration
+  #make menuconfig # CLI menu for configuration
   #make nconfig # new CLI menu for configuration
   #make xconfig # X-based configuration
   make oldconfig # using old config from previous kernel version
@@ -321,8 +326,8 @@ for _p in ${pkgname[@]}; do
 done
 
 md5sums=('bee5fe53ee1c3142b8f0c12c0d3348f9'
-         '43d8677d6457878ec266796b17f5882d'
-         '195c07c854bb78b870059aac088e971e'
+         '548cb705ab3352155494411c5c6e4c7f'
+         'dc35c83fd8739c7de08096999f480478'
          'fb218c1825366e722be83dd705d02822'
          'bfeb8670a65fc8c14a7076ec623e9898'
          '1651316b545214bb346af28f3925ccd0'
@@ -340,6 +345,8 @@ md5sums=('bee5fe53ee1c3142b8f0c12c0d3348f9'
          '64e5b711488df8205a27bae53f1a5844'
          'ca07019fbd95dd71d2992960443ebbc2'
          '0a11ff16a180483af1acf21b7dc72cf8'
+         'b87a109ad48bf8f2f2d774bc93f1fb42'
+         'f0faa8c20e17303710dc4c466bf83bd6'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
          '584777ae88bce2c5659960151b64c7d8'

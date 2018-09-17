@@ -1,0 +1,50 @@
+From 9aff0eeaccfa17cdd03ebf32a1817b6afdee45c8 Mon Sep 17 00:00:00 2001
+From: Urja Rannikko <urjaman@gmail.com>
+Date: Mon, 17 Sep 2018 09:16:44 +0000
+Subject: [PATCH] drm/panel: simple: Adjust n116bge mode & rate for veyrons
+
+This should get us a close to 60 Hz mode (60.00067..)
+from the rk3288 available clock of 74.25 Mhz.
+
+This has htotal of 1543 and vtotal 802. According
+to a datasheet for the N116BGE it should accept vtotal
+from 1506 to 1716, but in my testing it is stable
+from 1520 onwards. There would be closer to 60Hz
+modes at 1511*819 (loses sync) and at 1524*812 (works),
+but i thought the latter was a bit too close to the edge,
+so this is the next best mode.
+
+Signed-off-by: Urja Rannikko <urjaman@gmail.com>
+---
+ drivers/gpu/drm/panel/panel-simple.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index cbf1ab404ee7..34f02c8b7c0e 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -1171,15 +1171,15 @@ static const struct panel_desc innolux_g121x1_l03 = {
+ };
+ 
+ static const struct drm_display_mode innolux_n116bge_mode = {
+-	.clock = 76420,
++	.clock = 74250,
+ 	.hdisplay = 1366,
+-	.hsync_start = 1366 + 136,
+-	.hsync_end = 1366 + 136 + 30,
+-	.htotal = 1366 + 136 + 30 + 60,
++	.hsync_start = 1366 + 87,
++	.hsync_end = 1366 + 87 + 30,
++	.htotal = 1366 + 87 + 30 + 60,
+ 	.vdisplay = 768,
+ 	.vsync_start = 768 + 8,
+-	.vsync_end = 768 + 8 + 12,
+-	.vtotal = 768 + 8 + 12 + 12,
++	.vsync_end = 768 + 8 + 14,
++	.vtotal = 768 + 8 + 14 + 12,
+ 	.vrefresh = 60,
+ 	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+ };
+-- 
+2.19.0
+
