@@ -1,0 +1,15 @@
+Short guide to my patches
+
+0020: Allows HDMI to work properly, likely not mainlineable (atleast as-is)
+	but i can live in hope...
+	seperate commits at: https://github.com/urjaman/linux/tree/rk3288_chromebook_hdmi_v3
+0021: Fixes USB hotplug, a version of this by someone else should soon
+	be in mainline and i can remove this
+0022: 100% hack, but should be harmless on veyrons and allows you to use the usb port 
+	w/ an otg controller as a device
+0023: Runs the panel actually at ~60Hz, dunno how useful but eases my mind.
+	The bigger thing is that the clock rate shown in xrandr matches
+	what the panel is ran at so that any apps doing frame timing math should
+	work better.
+0024: Enables dithering for the 6-bit per channel panel, fixes banding.
+
