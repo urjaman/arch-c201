@@ -1,4 +1,4 @@
-From 5594d669c62f2c4ded99e101c06e8bc237c0978a Mon Sep 17 00:00:00 2001
+From effb62687c69933a6f2e8c075c707f9b7b9b0e3f Mon Sep 17 00:00:00 2001
 From: Urja Rannikko <urjaman@gmail.com>
 Date: Sun, 23 Sep 2018 16:45:34 +0000
 Subject: [PATCH] drm/rockchip: vop: implement gamma lut
@@ -12,7 +12,7 @@ Signed-off-by: Urja Rannikko <urjaman@gmail.com>
  4 files changed, 109 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-index 2fb453e73eba..1416584b0c46 100644
+index 2fb453e73eba..bf75443be0f0 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 @@ -92,6 +92,11 @@ struct vop_win {
@@ -105,7 +105,7 @@ index 2fb453e73eba..1416584b0c46 100644
 +	struct drm_crtc *crtc = &vop->crtc;
 +	if (crtc->state->gamma_lut) {
 +		bool changed = vop_compute_gamma_lut(vop);
-+		if ((gamma_lut_active) && (!changed)) return;
++		if ((vop->gamma_lut_active) && (!changed)) return;
 +		vop->gamma_lut_active = true;
 +		WRITE_ONCE(vop->gamma_upd, 1);
 +	} else {
