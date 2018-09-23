@@ -1,0 +1,254 @@
+From 5594d669c62f2c4ded99e101c06e8bc237c0978a Mon Sep 17 00:00:00 2001
+From: Urja Rannikko <urjaman@gmail.com>
+Date: Sun, 23 Sep 2018 16:45:34 +0000
+Subject: [PATCH] drm/rockchip: vop: implement gamma lut
+
+Signed-off-by: Urja Rannikko <urjaman@gmail.com>
+---
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 97 +++++++++++++++++++++
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.h |  3 +-
+ drivers/gpu/drm/rockchip/rockchip_vop_reg.c |  4 +
+ drivers/gpu/drm/rockchip/rockchip_vop_reg.h |  6 ++
+ 4 files changed, 109 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
+index 2fb453e73eba..1416584b0c46 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
++++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
+@@ -92,6 +92,11 @@ struct vop_win {
+ 	struct vop *vop;
+ };
+ 
++/* Only export 256 since that is what userspace uses for now. */
++#define EXT_GAMMA_LUT_SIZE 256
++
++#define GAMMA_LUT_SIZE 1024
++
+ struct vop {
+ 	struct drm_crtc crtc;
+ 	struct device *dev;
+@@ -116,6 +121,12 @@ struct vop {
+ 	/* physical map length of vop register */
+ 	uint32_t len;
+ 
++	/* Gamma tables, not part of regs as specified in dt. */
++	uint32_t hwgamma_shadow[GAMMA_LUT_SIZE];
++	void __iomem *hwgamma;
++	unsigned long gamma_upd;
++	bool gamma_lut_active;
++
+ 	/* one time only one process allowed to config the register */
+ 	spinlock_t reg_lock;
+ 	/* lock vop irq reg */
+@@ -961,6 +972,12 @@ static void vop_crtc_atomic_enable(struct drm_crtc *crtc,
+ 	}
+ 	VOP_REG_SET(vop, common, dither_down, dither_bits);
+ 
++	/* Default to no gamma tables for now. */
++	if (vop->hwgamma) {
++		VOP_REG_SET(vop, common, dsp_lut_en, 0);
++		vop->gamma_lut_active = false;
++	}
++
+ 	VOP_REG_SET(vop, common, out_mode, s->output_mode);
+ 
+ 	VOP_REG_SET(vop, modeset, htotal_pw, (htotal << 16) | hsync_len);
+@@ -1009,6 +1026,65 @@ static void vop_wait_for_irq_handler(struct vop *vop)
+ 	synchronize_irq(vop->irq);
+ }
+ 
++static void vop_write_gamma_lut(struct vop* vop)
++{
++	uint32_t i;
++
++	for (i = 0; i < GAMMA_LUT_SIZE; i++) {
++		writel(vop->hwgamma_shadow[i], vop->hwgamma + (i * 4));
++	}
++}
++
++static void vop_gamma_vsync(struct vop* vop)
++{
++	uint32_t prev_lut_en = vop_read_reg(vop, 0, &vop->data->common->dsp_lut_en);
++	if (prev_lut_en) {
++		/* Flip the LUT off so we can update next time. */
++		VOP_REG_SET(vop, common, dsp_lut_en, 0);
++	} else {
++		vop_write_gamma_lut(vop);
++		VOP_REG_SET(vop, common, dsp_lut_en, 1);
++		WRITE_ONCE(vop->gamma_upd, 0);
++	}
++	vop_cfg_done(vop);
++}
++
++static bool vop_compute_gamma_lut(struct vop* vop)
++{
++	struct drm_crtc *crtc = &vop->crtc;
++	struct drm_color_lut *lut = crtc->state->gamma_lut->data;
++	bool changed = false;
++	uint32_t i, n;
++	const uint32_t rep = GAMMA_LUT_SIZE / EXT_GAMMA_LUT_SIZE;
++
++	for (i = 0; i < EXT_GAMMA_LUT_SIZE; i++) {
++		uint32_t val = drm_color_lut_extract(lut[i].red, 10) << 20 |
++			       drm_color_lut_extract(lut[i].green, 10) << 10 |
++			       drm_color_lut_extract(lut[i].blue, 10);
++		if (val != vop->hwgamma_shadow[i*rep]) changed = true;
++		for (n = 0; n < rep; n++) {
++			vop->hwgamma_shadow[(i * rep) + n] = val;
++		}
++	}
++	return changed;
++}
++
++static void vop_update_gamma_lut(struct vop* vop)
++{
++	struct drm_crtc *crtc = &vop->crtc;
++	if (crtc->state->gamma_lut) {
++		bool changed = vop_compute_gamma_lut(vop);
++		if ((gamma_lut_active) && (!changed)) return;
++		vop->gamma_lut_active = true;
++		WRITE_ONCE(vop->gamma_upd, 1);
++	} else {
++		/* Identity/noop gamma, just disable the lut. */
++		vop->gamma_lut_active = false;
++		WRITE_ONCE(vop->gamma_upd, 0);
++		VOP_REG_SET(vop, common, dsp_lut_en, 0);
++	}
++}
++
+ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
+ 				  struct drm_crtc_state *old_crtc_state)
+ {
+@@ -1023,6 +1099,9 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
+ 
+ 	spin_lock(&vop->reg_lock);
+ 
++	if ((vop->hwgamma) && (crtc->state->color_mgmt_changed))
++		vop_update_gamma_lut(vop);
++
+ 	vop_cfg_done(vop);
+ 
+ 	spin_unlock(&vop->reg_lock);
+@@ -1156,6 +1235,7 @@ static const struct drm_crtc_funcs vop_crtc_funcs = {
+ 	.page_flip = drm_atomic_helper_page_flip,
+ 	.destroy = vop_crtc_destroy,
+ 	.reset = vop_crtc_reset,
++	.gamma_set = drm_atomic_helper_legacy_gamma_set,
+ 	.atomic_duplicate_state = vop_crtc_duplicate_state,
+ 	.atomic_destroy_state = vop_crtc_destroy_state,
+ 	.enable_vblank = vop_crtc_enable_vblank,
+@@ -1240,6 +1320,7 @@ static irqreturn_t vop_isr(int irq, void *data)
+ 	if (active_irqs & FS_INTR) {
+ 		drm_crtc_handle_vblank(crtc);
+ 		vop_handle_vblank(vop);
++		if (READ_ONCE(vop->gamma_upd)) vop_gamma_vsync(vop);
+ 		active_irqs &= ~FS_INTR;
+ 		ret = IRQ_HANDLED;
+ 	}
+@@ -1305,6 +1386,9 @@ static int vop_create_crtc(struct vop *vop)
+ 		goto err_cleanup_planes;
+ 
+ 	drm_crtc_helper_add(crtc, &vop_crtc_helper_funcs);
++	/* Gamma tables */
++	drm_mode_crtc_set_gamma_size(crtc, EXT_GAMMA_LUT_SIZE);
++	drm_crtc_enable_color_mgmt(crtc, 0, false, EXT_GAMMA_LUT_SIZE);
+ 
+ 	/*
+ 	 * Create drm_planes for overlay windows with possible_crtcs restricted
+@@ -1609,6 +1693,19 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
+ 	}
+ 	vop->irq = (unsigned int)irq;
+ 
++	if (vop->data->gamma_lut_offset) {
++		const unsigned int gamma_len = GAMMA_LUT_SIZE*4;
++		resource_size_t gamma_addr = res->start + vop->data->gamma_lut_offset;
++		struct resource gamma_res = DEFINE_RES_MEM_NAMED(gamma_addr, gamma_len, "rockchip gamma LUT");
++		vop->hwgamma = devm_ioremap_resource(dev, &gamma_res);
++		if (IS_ERR(vop->hwgamma)) {
++			DRM_DEV_ERROR(dev, "failed to map gamma lut, err %ld\n", PTR_ERR(vop->hwgamma));
++			vop->hwgamma = 0;
++			goto gamma_out; /* I suppose it is better to run without gamma than fail loading. */
++		}
++	}
++gamma_out:
++
+ 	spin_lock_init(&vop->reg_lock);
+ 	spin_lock_init(&vop->irq_lock);
+ 	mutex_init(&vop->vop_lock);
+diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.h b/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
+index 084acdd0019a..3d389e4f660c 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
++++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
+@@ -74,6 +74,7 @@ struct vop_common {
+ 	struct vop_reg mmu_en;
+ 	struct vop_reg out_mode;
+ 	struct vop_reg standby;
++	struct vop_reg dsp_lut_en;
+ };
+ 
+ struct vop_misc {
+@@ -160,7 +161,7 @@ struct vop_data {
+ 	const struct vop_output *output;
+ 	const struct vop_win_data *win;
+ 	unsigned int win_size;
+-
++	unsigned int gamma_lut_offset;
+ #define VOP_FEATURE_OUTPUT_RGB10	BIT(0)
+ 	u64 feature;
+ };
+diff --git a/drivers/gpu/drm/rockchip/rockchip_vop_reg.c b/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
+index 08023d3ecb76..bf68250c6999 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
++++ b/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
+@@ -267,6 +267,7 @@ static const struct vop_common rk3288_common = {
+ 	.pre_dither_down = VOP_REG(RK3288_DSP_CTRL1, 0x1, 1),
+ 	.dither_down = VOP_REG(RK3288_DSP_CTRL1, 0xf, 1),
+ 	.dither_up = VOP_REG(RK3288_DSP_CTRL1, 0x1, 6),
++	.dsp_lut_en = VOP_REG(RK3288_DSP_CTRL1, 0x1, 0),
+ 	.data_blank = VOP_REG(RK3288_DSP_CTRL0, 0x1, 19),
+ 	.dsp_blank = VOP_REG(RK3288_DSP_CTRL0, 0x3, 18),
+ 	.out_mode = VOP_REG(RK3288_DSP_CTRL0, 0xf, 0),
+@@ -315,6 +316,7 @@ static const struct vop_data rk3288_vop = {
+ 	.output = &rk3288_output,
+ 	.win = rk3288_vop_win_data,
+ 	.win_size = ARRAY_SIZE(rk3288_vop_win_data),
++	.gamma_lut_offset = RK3288_GAMMA_LUT_ADDR,
+ };
+ 
+ static const int rk3368_vop_intrs[] = {
+@@ -433,6 +435,7 @@ static const struct vop_data rk3399_vop_big = {
+ 	.misc = &rk3368_misc,
+ 	.win = rk3368_vop_win_data,
+ 	.win_size = ARRAY_SIZE(rk3368_vop_win_data),
++	.gamma_lut_offset = RK3399_GAMMA_LUT_ADDR,
+ };
+ 
+ static const struct vop_win_data rk3399_vop_lit_win_data[] = {
+@@ -451,6 +454,7 @@ static const struct vop_data rk3399_vop_lit = {
+ 	.misc = &rk3368_misc,
+ 	.win = rk3399_vop_lit_win_data,
+ 	.win_size = ARRAY_SIZE(rk3399_vop_lit_win_data),
++	.gamma_lut_offset = RK3399_GAMMA_LUT_ADDR,
+ };
+ 
+ static const struct vop_win_data rk3228_vop_win_data[] = {
+diff --git a/drivers/gpu/drm/rockchip/rockchip_vop_reg.h b/drivers/gpu/drm/rockchip/rockchip_vop_reg.h
+index f81b510ea99c..b89b0ced2571 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_vop_reg.h
++++ b/drivers/gpu/drm/rockchip/rockchip_vop_reg.h
+@@ -121,6 +121,12 @@
+ #define RK3288_DSP_VACT_ST_END			0x0194
+ #define RK3288_DSP_VS_ST_END_F1			0x0198
+ #define RK3288_DSP_VACT_ST_END_F1		0x019c
++/* this is the end of what the device tree includes as RK3288 registers;
++ * there is an instance of rk_iommu in between. */
++#define RK3288_WIN2_LUT_ADDR			0x0400
++#define RK3288_WIN3_LUT_ADDR			0x0800
++#define RK3288_HWC_LUT_ADDR			0x0c00
++#define RK3288_GAMMA_LUT_ADDR			0x1000
+ /* register definition end */
+ 
+ /* rk3368 register definition */
+-- 
+2.19.0
+
