@@ -15,24 +15,24 @@ with xorg-server works if you disable glamor - there is a xorg.conf.d
 fragment for that in this repo
 
 
-For sound:
+# Sound
 i made a systemd service for running alsaucm so you hopefully dont burn your speakers...
 
-# 3.14
+## 3.14
 if you want to run that, copy the ROCKCHIPI2S alsa ucm
 data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented out there)
 
-# 4.x
+## 4.x
 for working sound with pulseaudio: check my alsa ucm HiFi.conf in this repo
 N.B. This HiFi.conf patch has been upstreamed, and will likely be in the next alsa-lib release (v1.1.7 maybe).
 
-
+# Wifi
 For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
 /lib/firmware/brcm/brcmfmac4354-sdio.bin 
 /lib/firmware/brcm/brcmfmac4354-sdio.txt
 (linux-firmware had a different bin and no .txt (that i guess was necessary), but i decided to trust ChromeOS instead...)
 linux-firmware updates will likely walk over the bin though, ugh.
-# chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
+chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
 Tada. Idk if that'll work but maybe :P
 
 
@@ -42,11 +42,14 @@ lets just say, it's not the best because it's way too generic (loading rockchip-
 I reconfigured the arch kernel so i'm keeping that in linux-c201 here...
 TODO: How to (semi-)automate keeping the kernel updated?
 
-Backlight controls:
+# Backlight (and volume) controls
 I have an udev ruleset to make it accessible for video group members,
 and xbindkeys config + scripts to adjust it. These are just one way to do it,
 but i really really wanted control of the adjustment curve to myself, so scripting works for that.
 
-Note: i also added volume controls to the .xbindkeysrc so i dont need the xfce pulseaudio widget - it's looking
+I also added volume controls to the .xbindkeysrc so i dont need the xfce pulseaudio widget - it's looking
 like that was giving me problems with the panel capturing the keyboard...
 (i use pasystray instead now, but it doesnt do keyboard controls).
+
+# home-usbdevicenet
+my "userspace" for a very hacky usb device mode hack in the kernel side
