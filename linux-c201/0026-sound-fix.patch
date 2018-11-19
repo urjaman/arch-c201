@@ -1,0 +1,28 @@
+From e638a42937d96370d78a31cc52dcc245b3920e8f Mon Sep 17 00:00:00 2001
+From: Urja Rannikko <urjaman@gmail.com>
+Date: Wed, 14 Nov 2018 05:07:45 +0000
+Subject: [PATCH 1/2] sound fix
+
+---
+ sound/soc/rockchip/rockchip_pcm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/rockchip/rockchip_pcm.c b/sound/soc/rockchip/rockchip_pcm.c
+index f77538319221..52e01cff0dd7 100644
+--- a/sound/soc/rockchip/rockchip_pcm.c
++++ b/sound/soc/rockchip/rockchip_pcm.c
+@@ -37,8 +37,9 @@ static const struct snd_dmaengine_pcm_config rk_dmaengine_pcm_config = {
+ 
+ int rockchip_pcm_platform_register(struct device *dev)
+ {
+-	return devm_snd_dmaengine_pcm_register(dev, &rk_dmaengine_pcm_config,
+-		SND_DMAENGINE_PCM_FLAG_COMPAT);
++//	return devm_snd_dmaengine_pcm_register(dev, &rk_dmaengine_pcm_config,
++//		SND_DMAENGINE_PCM_FLAG_COMPAT);
++	return devm_snd_dmaengine_pcm_register(dev, NULL, 0);
+ }
+ EXPORT_SYMBOL_GPL(rockchip_pcm_platform_register);
+ 
+-- 
+2.19.1
+

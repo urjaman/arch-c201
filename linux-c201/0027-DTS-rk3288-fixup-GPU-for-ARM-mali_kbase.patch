@@ -1,0 +1,31 @@
+From a7866d3b107b7f17e14ce0acfe4611abec0f8708 Mon Sep 17 00:00:00 2001
+From: Urja Rannikko <urjaman@gmail.com>
+Date: Wed, 14 Nov 2018 05:17:10 +0000
+Subject: [PATCH 2/2] DTS: rk3288: fixup GPU for ARM mali_kbase
+
+---
+ arch/arm/boot/dts/rk3288.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index 0840ffb3205c..1891f8e805db 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -1246,12 +1246,12 @@
+ 	};
+ 
+ 	gpu: gpu@ffa30000 {
+-		compatible = "rockchip,rk3288-mali", "arm,mali-t760";
++		compatible = "rockchip,rk3288-mali", "arm,mali-t760", "arm,mali-midgard";
+ 		reg = <0x0 0xffa30000 0x0 0x10000>;
+ 		interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
+-		interrupt-names = "job", "mmu", "gpu";
++		interrupt-names = "JOB", "MMU", "GPU";
+ 		clocks = <&cru ACLK_GPU>;
+ 		operating-points-v2 = <&gpu_opp_table>;
+ 		power-domains = <&power RK3288_PD_GPU>;
+-- 
+2.19.1
+
