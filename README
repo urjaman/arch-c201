@@ -51,5 +51,11 @@ I also added volume controls to the .xbindkeysrc so i dont need the xfce pulseau
 like that was giving me problems with the panel capturing the keyboard...
 (i use pasystray instead now, but it doesnt do keyboard controls).
 
+# cbatticon-simplified
+I simplified cbatticon code a bit because it was being unreliable and i got enough of waiting
+for the maintainer to figure his stuff out - a pkgbuild to build my version
+(just a git build pointed at my repo) is included.
+
 # home-usbdevicenet
 my "userspace" for a very hacky usb device mode hack in the kernel side
+

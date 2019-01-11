@@ -1,0 +1,34 @@
+# Maintainer: Alexander F Rødseth <xyproto@archlinux.org>
+# Contributor: Valère Monseur <valere.monseur@ymail.com>
+# Modified by: Urja Rannikko <urjaman@gmail.com>
+
+_pkgname=cbatticon
+pkgname=cbatticon-simplified
+pkgver=0.r161.1e5ba3d
+pkgrel=1
+pkgdesc='Lightweight battery icon for the system tray'
+arch=('armv7h')
+url='https://github.com/urjaman/cbatticon'
+license=('GPL2')
+depends=('libnotify' 'gtk3')
+provides=('cbatticon')
+conflicts=('cbatticon')
+
+source=("$_pkgname"::'git+https://github.com/urjaman/cbatticon.git')
+md5sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_pkgname}"
+  printf "0.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  make -C "$_pkgname" WITH_NOTIFY=1 WITH_GTK3=1
+}
+
+package() {
+  make -C "$_pkgname" PREFIX="$pkgdir/usr" install
+}
+
+# getver: github.com/urjaman/cbatticon
+# vim: ts=2 sw=2 et:
