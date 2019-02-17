@@ -26,7 +26,8 @@ git log --reverse --format=format:%H%n $OLD_HASH..HEAD PKGBUILD | while read lin
 do
 	if [ -n "$line" ]; then
 		git format-patch --start-number=9999 -1 $line
-		mv 9999-*.patch $BASEDIR/kupdate-$N.patch
+		NS=$(printf "%03d" $N)
+		mv 9999-*.patch $BASEDIR/kupdate-$NS.patch
 		N=$((N + 1))
 	fi
 done

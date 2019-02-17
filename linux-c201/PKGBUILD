@@ -7,19 +7,19 @@
 buildarch=4
 
 pkgbase=linux-c201
-_srcname=linux-4.19
+_srcname=linux-4.20
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.19.0
-pkgrel=3
-rcnrel=armv7-x3
+pkgver=4.20.6
+pkgrel=1
+rcnrel=armv7-x6
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
-#        "http://www.kernel.org/pub/linux/kernel/v4.x/patch-${pkgver}.xz"
+        "http://www.kernel.org/pub/linux/kernel/v4.x/patch-${pkgver}.xz"
         "http://rcn-ee.com/deb/sid-armhf/v${pkgver}-${rcnrel}/patch-${pkgver%.0}-${rcnrel}.diff.gz"
         '0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch'
         '0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch'
@@ -29,26 +29,27 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         '0006-set-default-cubietruck-led-triggers.patch'
         '0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch'
         '0008-ARM-dove-enable-ethernet-on-D3Plug.patch'
-        '0009-usb-dwc2-disable-power_down-on-rockchip-devices.patch'
-	'0020-RK3288-HDMI-clock-hacks-combined.patch'
+        '0009-media-s5p-mfc-fix-incorrect-bus-assignment-in-virtua.patch'
+#	'0020-RK3288-HDMI-clock-hacks-combined.patch'
 	'0022-dwc2-mode-hack.patch'
 	'0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch'
 	'0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch'
-	'0025-drm-rockchip-vop-implement-gamma-lut.patch'
-	'0026-sound-fix.patch'
+#	'0025-drm-rockchip-vop-implement-gamma-lut.patch'
+#	'0026-sound-fix.patch'
 	'0027-DTS-rk3288-fixup-GPU-for-ARM-mali_kbase.patch'
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
         'linux.preset'
-        '99-linux.hook'
+        '60-linux.hook'
+        '90-linux.hook'
         'config')
 
 prepare() {
   cd "${srcdir}/${_srcname}"
   
   # add upstream patch
-#  GIT_DIR=/tmp git apply --whitespace=nowarn ../patch-${pkgver}
+  GIT_DIR=/tmp git apply --whitespace=nowarn ../patch-${pkgver}
 
   # RCN patch
   GIT_DIR=/tmp git apply ../patch-${pkgver%.0}-${rcnrel}.diff
@@ -62,15 +63,15 @@ prepare() {
   GIT_DIR=/tmp git apply ../0006-set-default-cubietruck-led-triggers.patch
   GIT_DIR=/tmp git apply ../0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch
   GIT_DIR=/tmp git apply ../0008-ARM-dove-enable-ethernet-on-D3Plug.patch
-  GIT_DIR=/tmp git apply ../0009-usb-dwc2-disable-power_down-on-rockchip-devices.patch
+  GIT_DIR=/tmp git apply ../0009-media-s5p-mfc-fix-incorrect-bus-assignment-in-virtua.patch
 
   # arch-c201 patches
-  GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-clock-hacks-combined.patch
+#  GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-clock-hacks-combined.patch
   GIT_DIR=/tmp git apply ../0022-dwc2-mode-hack.patch
   GIT_DIR=/tmp git apply ../0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch
   GIT_DIR=/tmp git apply ../0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch
-  GIT_DIR=/tmp git apply ../0025-drm-rockchip-vop-implement-gamma-lut.patch
-  GIT_DIR=/tmp git apply ../0026-sound-fix.patch
+#  GIT_DIR=/tmp git apply ../0025-drm-rockchip-vop-implement-gamma-lut.patch
+#  GIT_DIR=/tmp git apply ../0026-sound-fix.patch
   GIT_DIR=/tmp git apply ../0027-DTS-rk3288-fixup-GPU-for-ARM-mali_kbase.patch
 
   cat "${srcdir}/config" > ./.config
@@ -132,44 +133,41 @@ _package() {
   _basekernel=${_kernver%%-*}
   _basekernel=${_basekernel%.*}
 
-  mkdir -p "${pkgdir}"/{lib/modules,lib/firmware}
-  make INSTALL_MOD_PATH="${pkgdir}" modules_install
+  mkdir -p "${pkgdir}"/{boot,usr/lib/modules}
+  make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
   make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
   cp arch/$KARCH/boot/zImage "${pkgdir}/boot/zImage"
 
-  # set correct depmod command for install
-  sed \
-    -e  "s/KERNEL_NAME=.*/KERNEL_NAME=${_kernelname}/g" \
-    -e  "s/KERNEL_VERSION=.*/KERNEL_VERSION=${_kernver}/g" \
-    -i "${startdir}/${pkgname}.install"
+  # make room for external modules
+  local _extramodules="extramodules-${_basekernel}${_kernelname}"
+  ln -s "../${_extramodules}" "${pkgdir}/usr/lib/modules/${_kernver}/extramodules"
 
-  # install mkinitcpio preset file for kernel
-  install -D -m644 "${srcdir}/linux.preset" "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
-  sed \
-    -e "1s|'linux.*'|'${pkgbase}'|" \
-    -e "s|ALL_kver=.*|ALL_kver=\"${_kernver}\"|" \
-    -i "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
-
-  # install pacman hook for initramfs regeneration
-  sed "s|%PKGBASE%|${pkgbase}|g" "${srcdir}/99-linux.hook" |
-    install -D -m644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/99-${pkgbase}.hook"
+  # add real version for building modules and running depmod from hook
+  echo "${_kernver}" |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modules/${_extramodules}/version"
 
   # remove build and source links
-  rm -f "${pkgdir}"/lib/modules/${_kernver}/{source,build}
-  # remove the firmware
-  rm -rf "${pkgdir}/lib/firmware"
-  # make room for external modules
-  ln -s "../extramodules-${_basekernel}${_kernelname:--ARCH}" "${pkgdir}/lib/modules/${_kernver}/extramodules"
-  # add real version for building modules and running depmod from post_install/upgrade
-  mkdir -p "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}"
-  echo "${_kernver}" > "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}/version"
+  rm "${pkgdir}"/usr/lib/modules/${_kernver}/{source,build}
 
-  # Now we call depmod...
-  depmod -b "$pkgdir" -F System.map "$_kernver"
+  # now we call depmod...
+  depmod -b "${pkgdir}/usr" -F System.map "${_kernver}"
 
-  # move module tree /lib -> /usr/lib
-  mkdir -p "${pkgdir}/usr"
-  mv "$pkgdir/lib" "$pkgdir/usr"
+  # sed expression for following substitutions
+  local _subst="
+    s|%PKGBASE%|${pkgbase}|g
+    s|%KERNVER%|${_kernver}|g
+    s|%EXTRAMODULES%|${_extramodules}|g
+  "
+
+  # install mkinitcpio preset file
+  sed "${_subst}" ../linux.preset |
+    install -Dm644 /dev/stdin "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
+
+  # install pacman hooks
+  sed "${_subst}" ../60-linux.hook |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/60-${pkgbase}.hook"
+  sed "${_subst}" ../90-linux.hook |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
 }
 
 _package-headers() {
@@ -319,27 +317,26 @@ for _p in ${pkgname[@]}; do
   }"
 done
 
-md5sums=('740a90cf810c2105df8ee12e5d0bb900'
-         'c36273de258b349d35a8c64bbb047660'
-         'acbef669729b6d1714eae635e3fc5cb0'
-         '592521ffbad728eb5b6bd6cbfb2f7483'
-         'b75039abcd5c8d040ff16b3f95586827'
-         'bc31bbe488f53e9978b21a5f7ac728cd'
-         '939c308aacf213b333c8dd10595d488c'
-         '4c71d7af72e76823cc983ded54312edb'
-         '08dc5f1eda02cffa65842b5610ba8cb8'
-         '07232ec1318aab8d53a16e3a99af50a7'
-         '579a311a4be75313e778c9b04fa95f52'
-         '64e5b711488df8205a27bae53f1a5844'
+md5sums=('d39dd4ba2d5861c54b90d49be19eaf31'
+         'b8faceed2182f048279e400846df8ab7'
+         '85cd6dfbc36edbfa4332d3b1ab108d49'
+         'a9f76b75f18f89d535bbbe357c08f70e'
+         '40708505c237608fbc3923a714f8ffcb'
+         '339f1a7d7242c8639f33f6acd370f761'
+         'f276f1bfdd926516db36c81096eb6914'
+         '32ba1be48b4305dde4a3503097f1ad10'
+         '37c972c5bc79514b85846d5f1b13838a'
+         'c5fce59d890676702244170c2736dcb1'
+         '2907befef7c5dc788ceb5a99fdefd23c'
+         '2faa70647c4965b32e9f0f597614fcbf'
          '0a11ff16a180483af1acf21b7dc72cf8'
          'b87a109ad48bf8f2f2d774bc93f1fb42'
          'f0faa8c20e17303710dc4c466bf83bd6'
-         '1d6cfbc6153105c26402fcbe7a2f81b4'
-         '0a727e583ae8f7fc9a18480a20666cc7'
          '3e0dbac717ddbbe13d89f40c43aec6d4'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
          '584777ae88bce2c5659960151b64c7d8'
-         'fb034fe5f2e28a4cce30ae2d8cf6be3c'
-         '79fa396e3f9a09a85156d6d7c2d34b58'
+         '86d4a35722b5410e3b29fc92dae15d4b'
+         'ce6c81ad1ad1f8b333fd6077d47abdaf'
+         '3e2a512f8da5db5fe9f17875405e56a3'
          'SKIP')
