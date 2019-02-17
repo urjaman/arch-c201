@@ -1,11 +1,10 @@
-From aeb42ff3a2d04e19ff87b1e537e0d84d63132c11 Mon Sep 17 00:00:00 2001
+From eef5c0593dccc8d70dcc520364f6ce4d90012011 Mon Sep 17 00:00:00 2001
 From: Urja Rannikko <urjaman@gmail.com>
-Date: Wed, 22 Aug 2018 18:36:05 +0000
-Subject: [PATCH] RK3288 HDMI clock hacks combined
+Date: Sun, 26 Aug 2018 21:14:30 +0000
+Subject: [PATCH] RK3288 HDMI multipatch
 
-This is only for my patching convenience, contains these:
+Contains:
 
-clk: rockchip: improve rk3288 pll rates for better hdmi output
 dt-bindings: clock: rk3288-cru: Add property to dedicate NPLL for VOPx
 drivers: clk-rk3288: support for dedicating NPLL to a VOP
 dt-bindings: display/rockchip: dw_hdmi: Add property for HDMI frequency list
@@ -19,10 +18,10 @@ Signed-off-by: Urja Rannikko <urjaman@gmail.com>
  .../display/rockchip/dw_hdmi-rockchip.txt     |   1 +
  .../boot/dts/rk3288-veyron-chromebook.dtsi    |  67 +++++
  arch/arm/boot/dts/rk3288.dtsi                 |   6 +-
- drivers/clk/rockchip/clk-rk3288.c             |  98 +++++--
+ drivers/clk/rockchip/clk-rk3288.c             |  69 ++++-
  drivers/clk/rockchip/clk.h                    |   3 +
  drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c   | 269 ++++++++++++------
- 7 files changed, 335 insertions(+), 112 deletions(-)
+ 7 files changed, 310 insertions(+), 108 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt b/Documentation/devicetree/bindings/clock/rockchip,rk3288-cru.txt
 index 8cb47c39ba53..20724584e0a4 100644
@@ -51,10 +50,10 @@ index adc94fc3c9f8..edeacbbc4f26 100644
  Example:
  
 diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-index b16d570ff029..70ed0b2a9549 100644
+index b54746df3661..e6a9f3fa5ca5 100644
 --- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
 +++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-@@ -163,6 +163,25 @@
+@@ -126,6 +126,25 @@
  	};
  };
  
@@ -80,7 +79,7 @@ index b16d570ff029..70ed0b2a9549 100644
  &edp {
  	status = "okay";
  
-@@ -186,6 +205,54 @@
+@@ -149,6 +168,54 @@
  	status = "okay";
  };
  
@@ -136,10 +135,10 @@ index b16d570ff029..70ed0b2a9549 100644
  	pinctrl-0 = <&pwr_key_l &ap_lid_int_l>;
  	lid {
 diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index d7e49d29ace5..2106ddfdaf06 100644
+index 0840ffb3205c..9580ac4dae4d 100644
 --- a/arch/arm/boot/dts/rk3288.dtsi
 +++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -840,12 +840,14 @@
+@@ -854,12 +854,14 @@
  		rockchip,grf = <&grf>;
  		#clock-cells = <1>;
  		#reset-cells = <1>;
@@ -157,58 +156,10 @@ index d7e49d29ace5..2106ddfdaf06 100644
  				       <150000000>, <75000000>,
  				       <300000000>, <150000000>,
 diff --git a/drivers/clk/rockchip/clk-rk3288.c b/drivers/clk/rockchip/clk-rk3288.c
-index 450de24a1b42..7adf85e43078 100644
+index 5a67b7869960..7adf85e43078 100644
 --- a/drivers/clk/rockchip/clk-rk3288.c
 +++ b/drivers/clk/rockchip/clk-rk3288.c
-@@ -83,22 +83,43 @@ static struct rockchip_pll_rate_table rk3288_pll_rates[] = {
- 	RK3066_PLL_RATE( 768000000, 1, 64, 2),
- 	RK3066_PLL_RATE( 742500000, 8, 495, 2),
- 	RK3066_PLL_RATE( 696000000, 1, 58, 2),
-+	RK3066_PLL_RATE_NB(621000000, 1, 207, 8, 1),
- 	RK3066_PLL_RATE( 600000000, 1, 50, 2),
- 	RK3066_PLL_RATE_NB(594000000, 1, 198, 8, 1),
- 	RK3066_PLL_RATE( 552000000, 1, 46, 2),
- 	RK3066_PLL_RATE( 504000000, 1, 84, 4),
- 	RK3066_PLL_RATE( 500000000, 3, 125, 2),
- 	RK3066_PLL_RATE( 456000000, 1, 76, 4),
-+	RK3066_PLL_RATE( 428000000, 1, 107, 6),
- 	RK3066_PLL_RATE( 408000000, 1, 68, 4),
- 	RK3066_PLL_RATE( 400000000, 3, 100, 2),
-+	RK3066_PLL_RATE_NB( 394000000, 1, 197, 12, 1),
- 	RK3066_PLL_RATE( 384000000, 2, 128, 4),
- 	RK3066_PLL_RATE( 360000000, 1, 60, 4),
-+	RK3066_PLL_RATE_NB( 356000000, 1, 178, 12, 1),
-+	RK3066_PLL_RATE_NB( 324000000, 1, 189, 14, 1),
- 	RK3066_PLL_RATE( 312000000, 1, 52, 4),
--	RK3066_PLL_RATE( 300000000, 1, 50, 4),
--	RK3066_PLL_RATE( 297000000, 2, 198, 8),
-+	RK3066_PLL_RATE_NB( 308000000, 1, 154, 12, 1),
-+	RK3066_PLL_RATE_NB( 303000000, 1, 202, 16, 1),
-+	RK3066_PLL_RATE( 300000000, 1, 75, 6),
-+	RK3066_PLL_RATE_NB( 297750000, 2, 397, 16, 1),
-+	RK3066_PLL_RATE_NB( 293250000, 2, 391, 16, 1),
-+	RK3066_PLL_RATE_NB( 292500000, 1, 195, 16, 1),
-+	RK3066_PLL_RATE( 273600000, 1, 114, 10),
-+	RK3066_PLL_RATE_NB( 273000000, 1, 182, 16, 1),
-+	RK3066_PLL_RATE_NB( 270000000, 1, 180, 16, 1),
-+	RK3066_PLL_RATE_NB( 266250000, 2, 355, 16, 1),
-+	RK3066_PLL_RATE_NB( 256500000, 1, 171, 16, 1),
- 	RK3066_PLL_RATE( 252000000, 1, 84, 8),
--	RK3066_PLL_RATE( 216000000, 1, 72, 8),
--	RK3066_PLL_RATE( 148500000, 2, 99, 8),
-+	RK3066_PLL_RATE_NB( 250500000, 1, 167, 16, 1),
-+	RK3066_PLL_RATE_NB( 243428571, 1, 142, 14, 1),
-+	RK3066_PLL_RATE( 238000000, 1, 119, 12),
-+	RK3066_PLL_RATE_NB( 219750000, 2, 293, 16, 1),
-+	RK3066_PLL_RATE_NB( 216000000, 1, 144, 16, 1),
-+	RK3066_PLL_RATE_NB( 213000000, 1, 142, 16, 1),
-+	RK3066_PLL_RATE( 195428571, 1, 114, 14),
-+	RK3066_PLL_RATE( 160000000, 1, 80, 12),
-+	RK3066_PLL_RATE( 157500000, 1, 105, 16),
- 	RK3066_PLL_RATE( 126000000, 1, 84, 16),
- 	RK3066_PLL_RATE(  48000000, 1, 64, 32),
- 	{ /* sentinel */ },
-@@ -177,10 +198,14 @@ PNAME(mux_ddrphy_p)		= { "dpll_ddr", "gpll_ddr" };
+@@ -198,10 +198,14 @@ PNAME(mux_ddrphy_p)		= { "dpll_ddr", "gpll_ddr" };
  PNAME(mux_aclk_cpu_src_p)	= { "cpll_aclk_cpu", "gpll_aclk_cpu" };
  
  PNAME(mux_pll_src_cpll_gpll_p)		= { "cpll", "gpll" };
@@ -226,7 +177,7 @@ index 450de24a1b42..7adf85e43078 100644
  
  PNAME(mux_mmc_src_p)	= { "cpll", "gpll", "xin24m", "xin24m" };
  PNAME(mux_i2s_pre_p)	= { "i2s_src", "i2s_frac", "ext_i2s", "xin12m" };
-@@ -426,24 +451,24 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
+@@ -447,24 +451,24 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
  			RK3288_CLKSEL_CON(30), 14, 2, MFLAGS, 8, 5, DFLAGS,
  			RK3288_CLKGATE_CON(3), 4, GFLAGS),
  
@@ -256,7 +207,7 @@ index 450de24a1b42..7adf85e43078 100644
  			RK3288_CLKSEL_CON(6), 14, 2, MFLAGS, 8, 6, DFLAGS,
  			RK3288_CLKGATE_CON(3), 15, GFLAGS),
  
-@@ -452,16 +477,16 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
+@@ -473,16 +477,16 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
  	GATE(SCLK_HDMI_CEC, "sclk_hdmi_cec", "xin32k", 0,
  			RK3288_CLKGATE_CON(5), 11, GFLAGS),
  
@@ -276,7 +227,7 @@ index 450de24a1b42..7adf85e43078 100644
  			RK3288_CLKSEL_CON(42), 14, 2, MFLAGS, 8, 5, DFLAGS,
  			RK3288_CLKGATE_CON(13), 15, GFLAGS),
  
-@@ -535,7 +560,7 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
+@@ -556,7 +560,7 @@ static struct rockchip_clk_branch rk3288_clk_branches[] __initdata = {
  	COMPOSITE(0, "sclk_tspout", mux_tspout_p, 0,
  			RK3288_CLKSEL_CON(35), 14, 2, MFLAGS, 8, 5, DFLAGS,
  			RK3288_CLKGATE_CON(4), 11, GFLAGS),
@@ -285,7 +236,7 @@ index 450de24a1b42..7adf85e43078 100644
  			RK3288_CLKSEL_CON(35), 6, 2, MFLAGS, 0, 5, DFLAGS,
  			RK3288_CLKGATE_CON(4), 10, GFLAGS),
  
-@@ -895,6 +920,7 @@ static void __init rk3288_clk_init(struct device_node *np)
+@@ -916,6 +920,7 @@ static void __init rk3288_clk_init(struct device_node *np)
  {
  	struct rockchip_clk_provider *ctx;
  	struct clk *clk;
@@ -293,7 +244,7 @@ index 450de24a1b42..7adf85e43078 100644
  
  	rk3288_cru_base = of_iomap(np, 0);
  	if (!rk3288_cru_base) {
-@@ -902,6 +928,46 @@ static void __init rk3288_clk_init(struct device_node *np)
+@@ -923,6 +928,46 @@ static void __init rk3288_clk_init(struct device_node *np)
  		return;
  	}
  
@@ -341,10 +292,10 @@ index 450de24a1b42..7adf85e43078 100644
  	if (IS_ERR(ctx)) {
  		pr_err("%s: rockchip clk init failed\n", __func__);
 diff --git a/drivers/clk/rockchip/clk.h b/drivers/clk/rockchip/clk.h
-index ef601dded32c..8e2f70d62f03 100644
+index 6b53fff4cc96..dbda9d2815cc 100644
 --- a/drivers/clk/rockchip/clk.h
 +++ b/drivers/clk/rockchip/clk.h
-@@ -343,6 +343,9 @@ struct clk *rockchip_clk_register_muxgrf(const char *name,
+@@ -382,6 +382,9 @@ struct clk *rockchip_clk_register_muxgrf(const char *name,
  
  #define PNAME(x) static const char *const x[] __initconst
  
@@ -729,5 +680,5 @@ index 11309a2a4e43..740b0aeea796 100644
  	clk_disable_unprepare(hdmi->vpll_clk);
  }
 -- 
-2.18.0
+2.20.1
 

@@ -11,7 +11,7 @@ _srcname=linux-4.20
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
 pkgver=4.20.6
-pkgrel=1
+pkgrel=2
 rcnrel=armv7-x6
 arch=('armv7h')
 url="http://www.kernel.org/"
@@ -30,12 +30,11 @@ source=("http://www.kernel.org/pub/linux/kernel/v4.x/${_srcname}.tar.xz"
         '0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch'
         '0008-ARM-dove-enable-ethernet-on-D3Plug.patch'
         '0009-media-s5p-mfc-fix-incorrect-bus-assignment-in-virtua.patch'
-#	'0020-RK3288-HDMI-clock-hacks-combined.patch'
+	'0020-RK3288-HDMI-multipatch.patch'
 	'0022-dwc2-mode-hack.patch'
 	'0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch'
 	'0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch'
-#	'0025-drm-rockchip-vop-implement-gamma-lut.patch'
-#	'0026-sound-fix.patch'
+	'0025-drm-rockchip-vop-implement-gamma-lut.patch'
 	'0027-DTS-rk3288-fixup-GPU-for-ARM-mali_kbase.patch'
         'kernel.its'
         'kernel.keyblock'
@@ -66,12 +65,11 @@ prepare() {
   GIT_DIR=/tmp git apply ../0009-media-s5p-mfc-fix-incorrect-bus-assignment-in-virtua.patch
 
   # arch-c201 patches
-#  GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-clock-hacks-combined.patch
+  GIT_DIR=/tmp git apply ../0020-RK3288-HDMI-multipatch.patch
   GIT_DIR=/tmp git apply ../0022-dwc2-mode-hack.patch
   GIT_DIR=/tmp git apply ../0023-drm-panel-simple-Adjust-n116bge-mode-rate-for-veyron.patch
   GIT_DIR=/tmp git apply ../0024-drm-rockchip-vop-Dither-down-to-RGB666-if-output-bpc.patch
-#  GIT_DIR=/tmp git apply ../0025-drm-rockchip-vop-implement-gamma-lut.patch
-#  GIT_DIR=/tmp git apply ../0026-sound-fix.patch
+  GIT_DIR=/tmp git apply ../0025-drm-rockchip-vop-implement-gamma-lut.patch
   GIT_DIR=/tmp git apply ../0027-DTS-rk3288-fixup-GPU-for-ARM-mali_kbase.patch
 
   cat "${srcdir}/config" > ./.config
@@ -329,9 +327,11 @@ md5sums=('d39dd4ba2d5861c54b90d49be19eaf31'
          'c5fce59d890676702244170c2736dcb1'
          '2907befef7c5dc788ceb5a99fdefd23c'
          '2faa70647c4965b32e9f0f597614fcbf'
+         '4bc39b01daa679ebd1d3b5361c41caf1'
          '0a11ff16a180483af1acf21b7dc72cf8'
          'b87a109ad48bf8f2f2d774bc93f1fb42'
-         'f0faa8c20e17303710dc4c466bf83bd6'
+         'cf60114a438c88592c8cdd800911a303'
+         '4a154780a6df44a04783f4be6177df33'
          '3e0dbac717ddbbe13d89f40c43aec6d4'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
