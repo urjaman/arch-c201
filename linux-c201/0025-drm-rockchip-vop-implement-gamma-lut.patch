@@ -1,7 +1,7 @@
-From a6785cc86348090c9283a9db564582f287e0f244 Mon Sep 17 00:00:00 2001
+From 17af62c30891a47f104bccc48542913e80207c1b Mon Sep 17 00:00:00 2001
 From: Urja Rannikko <urjaman@gmail.com>
 Date: Sun, 23 Sep 2018 16:45:34 +0000
-Subject: [PATCH 3/4] drm/rockchip: vop: implement gamma lut
+Subject: [PATCH 3/3] drm/rockchip: vop: implement gamma lut
 
 Signed-off-by: Urja Rannikko <urjaman@gmail.com>
 ---
@@ -12,7 +12,7 @@ Signed-off-by: Urja Rannikko <urjaman@gmail.com>
  4 files changed, 110 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-index 2c30a94b147c..b228a1a9fa32 100644
+index 98c8b5b7627b..b1ef5e48345b 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 @@ -94,7 +94,13 @@ struct vop_win {
@@ -42,9 +42,9 @@ index 2c30a94b147c..b228a1a9fa32 100644
  	/* one time only one process allowed to config the register */
  	spinlock_t reg_lock;
  	/* lock vop irq reg */
-@@ -961,6 +973,12 @@ static void vop_crtc_atomic_enable(struct drm_crtc *crtc,
+@@ -973,6 +985,12 @@ static void vop_crtc_atomic_enable(struct drm_crtc *crtc,
+ 		VOP_REG_SET(vop, common, dither_down_en, 0);
  	}
- 	VOP_REG_SET(vop, common, dither_down, dither_bits);
  
 +	/* Default to no gamma tables for now. */
 +	if (vop->hwgamma) {
@@ -55,7 +55,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  	VOP_REG_SET(vop, common, out_mode, s->output_mode);
  
  	VOP_REG_SET(vop, modeset, htotal_pw, (htotal << 16) | hsync_len);
-@@ -1009,6 +1027,65 @@ static void vop_wait_for_irq_handler(struct vop *vop)
+@@ -1021,6 +1039,65 @@ static void vop_wait_for_irq_handler(struct vop *vop)
  	synchronize_irq(vop->irq);
  }
  
@@ -121,7 +121,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
  				  struct drm_crtc_state *old_crtc_state)
  {
-@@ -1023,6 +1100,9 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
+@@ -1035,6 +1112,9 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
  
  	spin_lock(&vop->reg_lock);
  
@@ -131,7 +131,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  	vop_cfg_done(vop);
  
  	spin_unlock(&vop->reg_lock);
-@@ -1173,6 +1253,7 @@ static const struct drm_crtc_funcs vop_crtc_funcs = {
+@@ -1185,6 +1265,7 @@ static const struct drm_crtc_funcs vop_crtc_funcs = {
  	.page_flip = drm_atomic_helper_page_flip,
  	.destroy = vop_crtc_destroy,
  	.reset = vop_crtc_reset,
@@ -139,7 +139,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  	.atomic_duplicate_state = vop_crtc_duplicate_state,
  	.atomic_destroy_state = vop_crtc_destroy_state,
  	.enable_vblank = vop_crtc_enable_vblank,
-@@ -1258,6 +1339,7 @@ static irqreturn_t vop_isr(int irq, void *data)
+@@ -1270,6 +1351,7 @@ static irqreturn_t vop_isr(int irq, void *data)
  	if (active_irqs & FS_INTR) {
  		drm_crtc_handle_vblank(crtc);
  		vop_handle_vblank(vop);
@@ -147,7 +147,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  		active_irqs &= ~FS_INTR;
  		ret = IRQ_HANDLED;
  	}
-@@ -1323,6 +1405,9 @@ static int vop_create_crtc(struct vop *vop)
+@@ -1335,6 +1417,9 @@ static int vop_create_crtc(struct vop *vop)
  		goto err_cleanup_planes;
  
  	drm_crtc_helper_add(crtc, &vop_crtc_helper_funcs);
@@ -157,7 +157,7 @@ index 2c30a94b147c..b228a1a9fa32 100644
  
  	/*
  	 * Create drm_planes for overlay windows with possible_crtcs restricted
-@@ -1626,6 +1711,19 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
+@@ -1638,6 +1723,19 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
  	}
  	vop->irq = (unsigned int)irq;
  
@@ -178,10 +178,10 @@ index 2c30a94b147c..b228a1a9fa32 100644
  	spin_lock_init(&vop->irq_lock);
  	mutex_init(&vop->vop_lock);
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.h b/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
-index fd5765dfd637..8dc4b5bf72ee 100644
+index 92050de140b6..abda448e8eae 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.h
-@@ -74,6 +74,7 @@ struct vop_common {
+@@ -76,6 +76,7 @@ struct vop_common {
  	struct vop_reg mmu_en;
  	struct vop_reg out_mode;
  	struct vop_reg standby;
@@ -189,7 +189,7 @@ index fd5765dfd637..8dc4b5bf72ee 100644
  };
  
  struct vop_misc {
-@@ -160,7 +161,7 @@ struct vop_data {
+@@ -162,7 +163,7 @@ struct vop_data {
  	const struct vop_output *output;
  	const struct vop_win_data *win;
  	unsigned int win_size;
@@ -199,18 +199,18 @@ index fd5765dfd637..8dc4b5bf72ee 100644
  #define VOP_FEATURE_INTERNAL_RGB	BIT(1)
  	u64 feature;
 diff --git a/drivers/gpu/drm/rockchip/rockchip_vop_reg.c b/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
-index a6db3cd5544b..a5a868fdcd04 100644
+index 59266c473795..58c16b457b77 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_vop_reg.c
-@@ -476,6 +476,7 @@ static const struct vop_common rk3288_common = {
+@@ -487,6 +487,7 @@ static const struct vop_common rk3288_common = {
+ 	.dither_down_en = VOP_REG(RK3288_DSP_CTRL1, 0x1, 2),
  	.pre_dither_down = VOP_REG(RK3288_DSP_CTRL1, 0x1, 1),
- 	.dither_down = VOP_REG(RK3288_DSP_CTRL1, 0xf, 1),
  	.dither_up = VOP_REG(RK3288_DSP_CTRL1, 0x1, 6),
 +	.dsp_lut_en = VOP_REG(RK3288_DSP_CTRL1, 0x1, 0),
  	.data_blank = VOP_REG(RK3288_DSP_CTRL0, 0x1, 19),
  	.dsp_blank = VOP_REG(RK3288_DSP_CTRL0, 0x3, 18),
  	.out_mode = VOP_REG(RK3288_DSP_CTRL0, 0xf, 0),
-@@ -524,6 +525,7 @@ static const struct vop_data rk3288_vop = {
+@@ -535,6 +536,7 @@ static const struct vop_data rk3288_vop = {
  	.output = &rk3288_output,
  	.win = rk3288_vop_win_data,
  	.win_size = ARRAY_SIZE(rk3288_vop_win_data),
@@ -218,7 +218,7 @@ index a6db3cd5544b..a5a868fdcd04 100644
  };
  
  static const int rk3368_vop_intrs[] = {
-@@ -642,6 +644,7 @@ static const struct vop_data rk3399_vop_big = {
+@@ -653,6 +655,7 @@ static const struct vop_data rk3399_vop_big = {
  	.misc = &rk3368_misc,
  	.win = rk3368_vop_win_data,
  	.win_size = ARRAY_SIZE(rk3368_vop_win_data),
@@ -226,7 +226,7 @@ index a6db3cd5544b..a5a868fdcd04 100644
  };
  
  static const struct vop_win_data rk3399_vop_lit_win_data[] = {
-@@ -660,6 +663,7 @@ static const struct vop_data rk3399_vop_lit = {
+@@ -671,6 +674,7 @@ static const struct vop_data rk3399_vop_lit = {
  	.misc = &rk3368_misc,
  	.win = rk3399_vop_lit_win_data,
  	.win_size = ARRAY_SIZE(rk3399_vop_lit_win_data),
