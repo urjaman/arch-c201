@@ -10,9 +10,9 @@ pkgbase=linux-c201
 _srcname=linux-4.20
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=4.20.6
-pkgrel=4
-rcnrel=armv7-x6
+pkgver=4.20.11
+pkgrel=1
+rcnrel=armv7-x7
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
@@ -90,10 +90,10 @@ build() {
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
-  #make menuconfig # CLI menu for configuration
+  make menuconfig # CLI menu for configuration
   #make nconfig # new CLI menu for configuration
   #make xconfig # X-based configuration
-  make oldconfig # using old config from previous kernel version
+  #make oldconfig # using old config from previous kernel version
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
@@ -316,8 +316,8 @@ for _p in ${pkgname[@]}; do
 done
 
 md5sums=('d39dd4ba2d5861c54b90d49be19eaf31'
-         'b8faceed2182f048279e400846df8ab7'
-         '85cd6dfbc36edbfa4332d3b1ab108d49'
+         'a54c60bf1a5f5682da13c86985c40336'
+         '12c064d84977ce090c4712afbfde3edd'
          'a9f76b75f18f89d535bbbe357c08f70e'
          '40708505c237608fbc3923a714f8ffcb'
          '339f1a7d7242c8639f33f6acd370f761'

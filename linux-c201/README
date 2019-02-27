@@ -2,7 +2,7 @@ Short guide to my patches
 
 0020: Allows HDMI to work properly, likely not mainlineable (atleast as-is)
 	but i can live in hope...
-	seperate commits at: https://github.com/urjaman/linux/tree/rk3288_chromebook_hdmi_v3
+	seperate commits at: https://github.com/urjaman/linux/tree/rk3288_chromebook_hdmi_v4
 0022: 100% hack, but should be harmless on veyrons and allows you to use the usb port 
 	w/ an otg controller as a device
 0023: Runs the panel actually at ~60Hz, dunno how useful but eases my mind.
@@ -15,6 +15,5 @@ Short guide to my patches
       it really hard (= almost impossible? that is to be determined)
       to change from one gamma table to another without a frame
       with the gamma off in between them.
-0026: Fixes sound output in 4.19... (a small-diff revert while we wait for proper fix)
 0027: Slightly adjust the device tree entry for the GPU so that ARM mali kernel module loads and finds it
 	(this is otherwise entirely untested stuff, just for debugging it)
