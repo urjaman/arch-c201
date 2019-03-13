@@ -24,4 +24,7 @@ Short guide to my patches
 	and
 	https://github.com/SolidHal/PrawnOS/tree/4.19-dev
 
-	(Still kinda untested, but atleast the emmc partitions seem to be found on boot now...)
+	I umm tested that i can atleast once boot with the eMMC as the rootfs, so that's something.
+
+I try to keep some bootable binary package (just so you can bootstrap a system if needed) of this
+kernel at: https://urja.dev/linux-c201/ -- No promises on availability tho.
