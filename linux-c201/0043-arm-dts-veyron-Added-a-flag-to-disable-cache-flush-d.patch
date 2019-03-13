@@ -1,0 +1,32 @@
+From 7981f05269baf2d3c8754c2e4a11f81a6c3d04d5 Mon Sep 17 00:00:00 2001
+From: "Miouyouyou (Myy)" <myy@miouyouyou.fr>
+Date: Thu, 1 Nov 2018 21:31:26 +0100
+Subject: [PATCH 43/43] arm: dts: veyron: Added a flag to disable cache flush
+ during reset
+
+Flushing the MMC cache of ASUS Chromebooks during initialization or
+"recovery" generates 10 minutes hangup, according to @SolidHal.
+
+This is an adaptation of @SolidHal, in order to pinpoint the fix to
+Veyron Chromebooks, and avoiding issues other RK3288 boards.
+
+Signed-off-by: Miouyouyou (Myy) <myy@miouyouyou.fr>
+---
+ arch/arm/boot/dts/rk3288-veyron.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/rk3288-veyron.dtsi b/arch/arm/boot/dts/rk3288-veyron.dtsi
+index d8bf939a3aff..030878246d37 100644
+--- a/arch/arm/boot/dts/rk3288-veyron.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron.dtsi
+@@ -127,6 +127,7 @@
+ 	mmc-hs200-1_8v;
+ 	mmc-pwrseq = <&emmc_pwrseq>;
+ 	non-removable;
++	no-recovery-cache-flush;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8>;
+ };
+-- 
+2.21.0
+

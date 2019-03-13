@@ -17,3 +17,11 @@ Short guide to my patches
       with the gamma off in between them.
 0027: Slightly adjust the device tree entry for the GPU so that ARM mali kernel module loads and finds it
 	(this is otherwise entirely untested stuff, just for debugging it)
+
+
+004x: Not exactly mine, but interesting patches re:eMMC support from:
+	https://github.com/Miouyouyou/RockMyy/tree/master/patches/kernel/v4.20
+	and
+	https://github.com/SolidHal/PrawnOS/tree/4.19-dev
+
+	(Still kinda untested, but atleast the emmc partitions seem to be found on boot now...)
