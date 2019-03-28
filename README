@@ -59,3 +59,7 @@ for the maintainer to figure his stuff out - a pkgbuild to build my version
 # home-usbdevicenet
 my "userspace" for a very hacky usb device mode hack in the kernel side
 
+# Widevine CDM
+If you're so interested (for me the killer app is spotify web player), the ChromeOS
+widevine plugin can run under linux (atleast as of writing) - for chromium it is simple,
+for firefox see widevine-mod directory here.
