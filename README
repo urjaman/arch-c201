@@ -2,29 +2,26 @@ This is just assorted stuff i have for having a more usable system on _my_ C201 
 ---
 
 For keyboard: i have my .Xmodmap in this repo... note that i'm finnish with US keyboard C201s :P
-TODO: Make it saner and more like ChromeOS ...
 
-
-# For "okay" X11 perf:
+# Xorg
+If you have this driver that arch-arm "provides", get rid of it:
 pacman -R xf86-video-armsoc-rockchip
-You can use fbturbo if you like, it works and is pretty fast:
-pacman -S xf86-video-fbturbo-git 
-OTOH 
-If you want to have multi-head support, the modesetting (KMS) driver that comes
-with xorg-server works if you disable glamor - there is a xorg.conf.d
-fragment for that in this repo
 
+You likely want just the modesetting driver that comes with xorg, it's
+pretty good and has multi-head support, but you wil need to disable glamor
+for now - there is a xorg.conf.d fragment for that in this repo
+
+(There is also the fbturbo driver, that does work but no multi-head...)
 
 # Sound
-i made a systemd service for running alsaucm so you hopefully dont burn your speakers...
+i made a systemd service for running alsaucm so you hopefully dont burn your speakers.
 
 ## 3.14
 if you want to run that, copy the ROCKCHIPI2S alsa ucm
 data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented out there)
 
-## 4.x
-for working sound with pulseaudio: check my alsa ucm HiFi.conf in this repo
-N.B. This HiFi.conf patch has been upstreamed, and will likely be in the next alsa-lib release (v1.1.7 maybe).
+## Mainline (4.x/5.x)
+The upstream alsa ucm files should be ok.
 
 # Wifi
 For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
@@ -35,12 +32,10 @@ linux-firmware updates will likely walk over the bin though, ugh.
 chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
 Tada. Idk if that'll work but maybe :P
 
-
-
-Kernel: the arch linux-armv7-chromebook will work, but...
-lets just say, it's not the best because it's way too generic (loading rockchip-drm as a module? really...).
-I reconfigured the arch kernel so i'm keeping that in linux-c201 here...
-TODO: How to (semi-)automate keeping the kernel updated?
+# Kernels
+I have a relatively stable (and rarely updated) kernel that you can use as a base
+if you like in linux-c201, and i might be testing something with the PKGBUILD in
+linux-test but that could also be abandoned at any point.
 
 # Backlight (and volume) controls
 I have an udev ruleset to make it accessible for video group members,
