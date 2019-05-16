@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 5.1.0-test-1 Kernel Configuration
+# Linux/arm 5.1.1-test-2 Kernel Configuration
 #
 
 #
@@ -3448,6 +3448,7 @@ CONFIG_ROCKCHIP_SARADC=m
 # CONFIG_CCS811 is not set
 # CONFIG_IAQCORE is not set
 # CONFIG_PMS7003 is not set
+# CONFIG_SENSIRION_SGP30 is not set
 # CONFIG_SPS30 is not set
 # CONFIG_VZ89X is not set
 CONFIG_IIO_CROS_EC_SENSORS_CORE=m
@@ -3867,7 +3868,7 @@ CONFIG_CONFIGFS_FS=y
 # CONFIG_NETWORK_FILESYSTEMS is not set
 CONFIG_NLS=y
 CONFIG_NLS_DEFAULT="utf8"
-# CONFIG_NLS_CODEPAGE_437 is not set
+CONFIG_NLS_CODEPAGE_437=m
 # CONFIG_NLS_CODEPAGE_737 is not set
 # CONFIG_NLS_CODEPAGE_775 is not set
 # CONFIG_NLS_CODEPAGE_850 is not set
