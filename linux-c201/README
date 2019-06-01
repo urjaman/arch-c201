@@ -1,30 +1,6 @@
-Short guide to my patches
-
-0020: Allows HDMI to work properly, likely not mainlineable (atleast as-is)
-	but i can live in hope...
-	seperate commits at: https://github.com/urjaman/linux/tree/rk3288_chromebook_hdmi_v4
-0022: 100% hack, but should be harmless on veyrons and allows you to use the usb port 
-	w/ an otg controller as a device
-0023: Runs the panel actually at ~60Hz, dunno how useful but eases my mind.
-	The bigger thing is that the clock rate shown in xrandr matches
-	what the panel is ran at so that any apps doing frame timing math should
-	work better.
-0024: Enables dithering for the 6-bit per channel panel, fixes banding.
-0025: Implements the gamma LUT so things like redshift "work", this is
-      still a bit WIP (flickers) since the hardware is really f'ed up in making
-      it really hard (= almost impossible? that is to be determined)
-      to change from one gamma table to another without a frame
-      with the gamma off in between them.
-0027: Slightly adjust the device tree entry for the GPU so that ARM mali kernel module loads and finds it
-	(this is otherwise entirely untested stuff, just for debugging it)
-
-
-004x: Not exactly mine, but interesting patches re:eMMC support from:
-	https://github.com/Miouyouyou/RockMyy/tree/master/patches/kernel/v4.20
-	and
-	https://github.com/SolidHal/PrawnOS/tree/4.19-dev
-
-	I umm tested that i can atleast once boot with the eMMC as the rootfs, so that's something.
+My added patches are now in the git (github.com/urjaman/linux branch c201-${pkgver})
+since I had enough of dealing with patch files, and also since using that it's
+easier to "sync" with the testing package.
 
 I try to keep some bootable binary package (just so you can bootstrap a system if needed) of this
 kernel at: https://urja.dev/linux-c201/ -- No promises on availability tho.

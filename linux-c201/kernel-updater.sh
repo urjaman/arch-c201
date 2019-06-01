@@ -7,7 +7,7 @@ shopt -s nullglob
 OLD_HASH=$(cat updater-hash)
 
 rm -rf upstream
-git clone $UPSTREAM -b $UPSTREAM_BRANCH upstream --depth=1000
+git clone $UPSTREAM -b $UPSTREAM_BRANCH upstream --depth=10000
 BASEDIR=$(pwd)
 cd upstream/$UPSTREAM_DIR
 cp config config.new
