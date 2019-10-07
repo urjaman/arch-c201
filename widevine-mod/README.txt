@@ -14,14 +14,14 @@ manifest.json
 close firefox
 
 install these files to the firefox profile directory:
-cp -a gmp-widevinecdm ~/.mozilla/firefox/<id>./default/
+cp -a gmp-widevinecdm ~/.mozilla/firefox/<id>.default/
 
 start firefox, open about:config and put in these via right click menu New:
 
 Name					Type	Value
 -
 media.gmp-manager.updateEnabled		boolean false
-media.gmp-widevinecdm.version		string	4.10.1303.0
+media.gmp-widevinecdm.version		string	4.10.1440.18
 media.gmp-widevinecdm.abi		string	arm-eabi-gcc3
 media.gmp-widevinecdm.visible		boolean true
 media.gmp-widevinecdm.enabled		boolean true
