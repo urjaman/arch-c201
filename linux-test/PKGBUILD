@@ -14,14 +14,14 @@ pkgbase=linux-c201${_xname}
 _srcname=linux
 _kernelname=${pkgbase#linux}
 _desc="Veyron Speedy"
-pkgver=5.4.rc2.r18.gfeaa6cf7a2ca
+pkgver=5.4.rc3.r18.gb1ec94099b42
 pkgrel=1
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
-source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4-rc2_v5"
+source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4-rc3_v1"
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -38,8 +38,8 @@ prepare() {
   
   cat "${srcdir}/config" > ./.config
 
-  # set extraversion to ${_xname}-${pkgrel}
-  sed -ri "s|^(EXTRAVERSION =)(.*)|\1 ${_xname}-${pkgrel}|" Makefile
+  # Append (if -rc*) or set ${_xname}-${pkgrel} as extraversion
+  sed -ri "s/^(EXTRAVERSION =) ?(-rc[^-]*|).*/\1 \2${_xname}-${pkgrel}/" Makefile
 
   # don't run depmod on 'make install'. We'll do this ourselves in packaging
   sed -i '2iexit 0' scripts/depmod.sh
