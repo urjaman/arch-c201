@@ -1,0 +1,8 @@
+[Unit]
+Description=Mount special partition via udev rule
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bigmount.sh %I
+ExecStop=/bin/true
+StandardOutput=journal

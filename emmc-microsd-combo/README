@@ -1,0 +1,14 @@
+These files WILL NOT work as-is for you, but they're an example of how
+i made my C201 mount a specific (by UUID) partition and bind-mount
+parts of it in many places of the filesystem that have big things that
+I dont need for just booting the system, and would rather not take
+space on the eMMC.
+
+It uses udev to start a systemd service (because udev is sandboxed in
+ways which would make it a bad idea to just launch the script)
+that starts a shell script which will mount the partition and
+all the bind-mounts of things on the partition around the filesystem.
+
+Note that i do put lots of package manager-managed things on the partition
+(the package cache, share/doc, and so on) and well if you do that, just
+be aware that you need to have the partition mounted when using pacman.

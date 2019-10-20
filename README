@@ -58,3 +58,11 @@ my "userspace" for a very hacky usb device mode hack in the kernel side
 If you're so interested (for me the killer app is spotify web player), the ChromeOS
 widevine plugin can run under linux (atleast as of writing) - for chromium it is simple,
 for firefox see widevine-mod directory here.
+
+# emmc-microsd-combo
+this is just an example/template for custom udev rule+systemd service+shell script for
+putting parts of your system onto a microSD partition (if you're running
+from eMMC and would like to use the space on it for better things)
+(It's not usable as-is, you'll need to atleast fill in the partition UUID
+ and adjust the script - obviously in addition to all the setup stuff of
+ making partitions, moving files etc...)

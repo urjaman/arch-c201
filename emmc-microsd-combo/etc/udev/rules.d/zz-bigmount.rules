@@ -1,0 +1,1 @@
+ACTION=="add", ENV{SUBSYSTEM}=="block", ENV{ID_FS_UUID}=="fill-your-fs-uuid-here", RUN+="/usr/bin/systemctl restart bigdata-mount@%k.service", ENV{UDISKS_IGNORE}="1"
