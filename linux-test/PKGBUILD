@@ -14,14 +14,14 @@ pkgbase=linux-c201${_xname}
 _srcname=linux
 _kernelname=${pkgbase#linux}
 _desc="Veyron Speedy"
-pkgver=5.4.rc6.r17.g8fdcc3ee3af5
+pkgver=5.4.rc7.r17.g5e1a648dffaa
 pkgrel=1
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
-source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4-rc6_v1"
+source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4-rc7_v1"
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
