@@ -1,13 +1,13 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 5.4.7-test-1 Kernel Configuration
+# Linux/arm 5.4.10-test-1 Kernel Configuration
 #
 
 #
-# Compiler: gcc (GCC) 8.3.0
+# Compiler: gcc (GCC) 9.2.0
 #
 CONFIG_CC_IS_GCC=y
-CONFIG_GCC_VERSION=80300
+CONFIG_GCC_VERSION=90200
 CONFIG_CLANG_VERSION=0
 CONFIG_CC_CAN_LINK=y
 CONFIG_CC_HAS_ASM_GOTO=y
@@ -686,14 +686,9 @@ CONFIG_ARCH_HAS_GCOV_PROFILE_ALL=y
 CONFIG_PLUGIN_HOSTCC="g++"
 CONFIG_HAVE_GCC_PLUGINS=y
 CONFIG_GCC_PLUGINS=y
-
-#
-# GCC plugins
-#
 # CONFIG_GCC_PLUGIN_CYC_COMPLEXITY is not set
 # CONFIG_GCC_PLUGIN_LATENT_ENTROPY is not set
 # CONFIG_GCC_PLUGIN_RANDSTRUCT is not set
-# end of GCC plugins
 # end of General architecture-dependent options
 
 CONFIG_RT_MUTEXES=y
