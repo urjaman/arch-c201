@@ -14,14 +14,14 @@ pkgbase=linux-c201${_xname}
 _srcname=linux
 _kernelname=${pkgbase#linux}
 _desc="Veyron Speedy"
-pkgver=5.4.10.r21.g07ade9f319af
-pkgrel=1
+pkgver=5.4.32.r18.g076e5d9aa35e
+pkgrel=2
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
-source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4.10_v1"
+source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-5.4.32_v1"
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -124,7 +124,7 @@ _package() {
 
 _package-chromebook() {
   pkgdesc="The Linux Kernel - ${_desc} - Chromebooks"
-  depends=("linux-c201${xname}")
+  depends=("linux-c201${_xname}")
   install=chromebook.install
 
   cd "${srcdir}/${_srcname}"
