@@ -1,6 +1,5 @@
-My added patches are now in the git (github.com/urjaman/linux branch c201-${pkgver})
-since I had enough of dealing with patch files, and also since using that it's
-easier to "sync" with the testing package.
+My added patches are now in the git (github.com/urjaman/linux branch c201-${pkgver}_vN),
+the multipatch file here is generated from that repo on an as-needed basis.
 
 I try to keep some bootable binary package (just so you can bootstrap a system if needed) of this
 kernel at: https://urja.dev/linux-c201/ -- No promises on availability tho.

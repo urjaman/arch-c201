@@ -7,19 +7,20 @@
 buildarch=4
 
 pkgbase=linux-c201
-_srcname=linux
+_srcname=linux-5.4
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=5.1.6
-rcnver=5.1.5
+pkgver=5.4.34
 pkgrel=1
-rcnrel=armv7-x5
+rcnver=5.4.34
+rcnrel=armv7-x24
 arch=('armv7h')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'vboot-utils' 'dtc')
 options=('!strip')
-source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-${pkgver}"
+source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
+        "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
         "http://rcn-ee.com/deb/sid-armhf/v${rcnver}-${rcnrel}/patch-${rcnver%.0}-${rcnrel}.diff.gz"
         '0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch'
         '0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch'
@@ -29,6 +30,8 @@ source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-${pkgver}"
         '0006-set-default-cubietruck-led-triggers.patch'
         '0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch'
         '0008-ARM-dove-enable-ethernet-on-D3Plug.patch'
+        '0009-USB-Armory-MkII-support.patch'
+        'linux-c201-multipatch.patch'
         'kernel.its'
         'kernel.keyblock'
         'kernel_data_key.vbprivk'
@@ -39,22 +42,34 @@ source=("linux::git+https://github.com/urjaman/linux.git#branch=c201-${pkgver}"
 
 prepare() {
   cd "${srcdir}/${_srcname}"
-  
-  # RCN patch
-  GIT_DIR=/tmp git apply ../patch-${rcnver%.0}-${rcnrel}.diff
- 
-  # ALARM patches
-  GIT_DIR=/tmp git apply ../0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch
-  GIT_DIR=/tmp git apply ../0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch
-  GIT_DIR=/tmp git apply ../0003-SMILE-Plug-device-tree-file.patch
-  GIT_DIR=/tmp git apply ../0004-fix-mvsdio-eMMC-timing.patch
-  GIT_DIR=/tmp git apply ../0005-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
-  GIT_DIR=/tmp git apply ../0006-set-default-cubietruck-led-triggers.patch
-  GIT_DIR=/tmp git apply ../0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch
-  GIT_DIR=/tmp git apply ../0008-ARM-dove-enable-ethernet-on-D3Plug.patch
 
-  # My patches are now just part of the git repo we use as a source
-  # (I've had enough with messing about patch files ehh)
+  # Build-in-git-tree hack
+  export GIT_DIR=/var/empty
+  
+  # add upstream patch
+  git apply --whitespace=nowarn ../patch-${pkgver}
+
+  # RCN patch
+  git apply ../patch-${rcnver%.0}-${rcnrel}.diff
+
+  # ALARM patches
+  git apply ../0001-ARM-atags-add-support-for-Marvell-s-u-boot.patch
+  git apply ../0002-ARM-atags-fdt-retrieve-MAC-addresses-from-Marvell-bo.patch
+  git apply ../0003-SMILE-Plug-device-tree-file.patch
+  git apply ../0004-fix-mvsdio-eMMC-timing.patch
+  git apply ../0005-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch
+  git apply ../0006-set-default-cubietruck-led-triggers.patch
+  git apply ../0007-exynos4412-odroid-set-higher-minimum-buck2-regulator.patch
+  git apply ../0008-ARM-dove-enable-ethernet-on-D3Plug.patch
+  git apply ../0009-USB-Armory-MkII-support.patch
+
+  # linux-c201 patchset: generated with
+  # git diff tags/v<version>..c201-<version>_v1 # latest, but usually it is v1
+  # in my https://github.com/urjaman/linux.git
+  git apply ../linux-c201-multipatch.patch
+
+  # Undo the hack to limit scope
+  unset GIT_DIR
 
   cat "${srcdir}/config" > ./.config
 
@@ -74,10 +89,10 @@ build() {
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
-  make menuconfig # CLI menu for configuration
+  #make menuconfig # CLI menu for configuration
   #make nconfig # new CLI menu for configuration
   #make xconfig # X-based configuration
-  #make oldconfig # using old config from previous kernel version
+  make oldconfig # using old config from previous kernel version
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
@@ -93,7 +108,7 @@ build() {
   #yes "" | make config
 
   # build!
-  make -j5 ${MAKEFLAGS} zImage modules dtbs
+  make -j3 ${MAKEFLAGS} zImage modules dtbs
 }
 
 _package() {
@@ -151,118 +166,80 @@ _package() {
     install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
 }
 
+
 _package-headers() {
   pkgdesc="Header files and scripts for building modules for linux kernel - ${_desc}"
   provides=("linux-headers=${pkgver}")
   conflicts=('linux-headers')
   replaces=('linux-mvebu-headers' 'linux-sun4i-headers' 'linux-sun5i-headers' 'linux-sun7i-headers' 'linux-usbarmory-headers' 'linux-wandboard-headers' 'linux-clearfog-headers')
 
-  install -dm755 "${pkgdir}/usr/lib/modules/${_kernver}"
+  cd ${_srcname}
+  local _builddir="${pkgdir}/usr/lib/modules/${_kernver}/build"
 
-  cd "${srcdir}/${_srcname}"
-  install -D -m644 Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/Makefile"
-  install -D -m644 kernel/Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/kernel/Makefile"
-  install -D -m644 .config \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/.config"
+  install -Dt "${_builddir}" -m644 Makefile .config Module.symvers
+  install -Dt "${_builddir}/kernel" -m644 kernel/Makefile
 
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include"
+  mkdir "${_builddir}/.tmp_versions"
 
-  for i in acpi asm-generic config crypto drm generated keys linux math-emu \
-    media net pcmcia scsi soc sound trace uapi video xen; do
-    cp -a include/${i} "${pkgdir}/usr/lib/modules/${_kernver}/build/include/"
-  done
+  cp -t "${_builddir}" -a include scripts
 
-  # copy arch includes for external modules
-  mkdir -p ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH
-  cp -a arch/$KARCH/include ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/
+  install -Dt "${_builddir}/arch/${KARCH}" -m644 arch/${KARCH}/Makefile
+  install -Dt "${_builddir}/arch/${KARCH}/kernel" -m644 arch/${KARCH}/kernel/asm-offsets.s arch/$KARCH/kernel/module.lds
+
+  cp -t "${_builddir}/arch/${KARCH}" -a arch/${KARCH}/include
   for i in dove exynos omap2; do
-    mkdir -p ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/mach-${i}
-    cp -a arch/$KARCH/mach-${i}/include ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/mach-${i}/
+    mkdir -p "${_builddir}/arch/${KARCH}/mach-${i}"
+    cp -t "${_builddir}/arch/${KARCH}/mach-${i}" -a arch/$KARCH/mach-${i}/include
   done
   for i in omap orion samsung versatile; do
-    mkdir -p ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/plat-${i}
-    cp -a arch/$KARCH/plat-${i}/include ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/plat-${i}/
+    mkdir -p "${_builddir}/arch/${KARCH}/plat-${i}"
+    cp -t "${_builddir}/arch/${KARCH}/plat-${i}" -a arch/$KARCH/plat-${i}/include
   done
 
-  # copy files necessary for later builds, like nvidia and vmware
-  cp Module.symvers "${pkgdir}/usr/lib/modules/${_kernver}/build"
-  cp -a scripts "${pkgdir}/usr/lib/modules/${_kernver}/build"
+  install -Dt "${_builddir}/drivers/md" -m644 drivers/md/*.h
+  install -Dt "${_builddir}/net/mac80211" -m644 net/mac80211/*.h
 
-  # fix permissions on scripts dir
-  chmod og-w -R "${pkgdir}/usr/lib/modules/${_kernver}/build/scripts"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/.tmp_versions"
-
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel"
-
-  cp arch/${KARCH}/Makefile "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/"
-
-  cp arch/${KARCH}/kernel/asm-offsets.s "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel/"
-
-  # add dm headers
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/md"
-  cp drivers/md/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/md"
-
-  # add inotify.h
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux"
-  cp include/linux/inotify.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux/"
-
-  # add wireless headers
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/net/mac80211/"
-  cp net/mac80211/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/net/mac80211/"
-
-  # add dvb headers for external modules
-  # in reference to:
-  # http://bugs.archlinux.org/task/11194
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
-  cp include/config/dvb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
-
-  # add dvb headers for http://mcentral.de/hg/~mrec/em28xx-new
-  # in reference to:
   # http://bugs.archlinux.org/task/13146
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  cp drivers/media/dvb-frontends/lgdt330x.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
-  cp drivers/media/i2c/msp3400-driver.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
+  install -Dt "${_builddir}/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
 
-  # add dvb headers
-  # in reference to:
   # http://bugs.archlinux.org/task/20402
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb"
-  cp drivers/media/usb/dvb-usb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends"
-  cp drivers/media/dvb-frontends/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners"
-  cp drivers/media/tuners/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners/"
+  install -Dt "${_builddir}/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h
+  install -Dt "${_builddir}/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h
+  install -Dt "${_builddir}/drivers/media/tuners" -m644 drivers/media/tuners/*.h
 
   # add xfs and shmem for aufs building
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/fs/xfs"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/mm"
+  mkdir -p "${_builddir}"/{fs/xfs,mm}
 
   # copy in Kconfig files
-  for i in $(find . -name "Kconfig*"); do
-    mkdir -p "${pkgdir}"/usr/lib/modules/${_kernver}/build/`echo ${i} | sed 's|/Kconfig.*||'`
-    cp ${i} "${pkgdir}/usr/lib/modules/${_kernver}/build/${i}"
-  done
-
-  chown -R root.root "${pkgdir}/usr/lib/modules/${_kernver}/build"
-  find "${pkgdir}/usr/lib/modules/${_kernver}/build" -type d -exec chmod 755 {} \;
-
-  # strip scripts directory
-  find "${pkgdir}/usr/lib/modules/${_kernver}/build/scripts" -type f -perm -u+w 2>/dev/null | while read binary ; do
-    case "$(file -bi "${binary}")" in
-      *application/x-sharedlib*) # Libraries (.so)
-        /usr/bin/strip ${STRIP_SHARED} "${binary}";;
-      *application/x-archive*) # Libraries (.a)
-        /usr/bin/strip ${STRIP_STATIC} "${binary}";;
-      *application/x-executable*) # Binaries
-        /usr/bin/strip ${STRIP_BINARIES} "${binary}";;
-    esac
-  done
+  find . -name Kconfig\* -exec install -Dm644 {} "${_builddir}/{}" \;
 
   # remove unneeded architectures
-  rm -rf "${pkgdir}"/usr/lib/modules/${_kernver}/build/arch/{alpha,arc,arm26,arm64,avr32,blackfin,c6x,cris,frv,h8300,hexagon,ia64,m32r,m68k,m68knommu,metag,mips,microblaze,mn10300,openrisc,parisc,powerpc,ppc,s390,score,sh,sh64,sparc,sparc64,tile,unicore32,um,v850,x86,xtensa}
+  local _arch
+  for _arch in "${_builddir}"/arch/*/; do
+    [[ ${_arch} == */${KARCH}/ ]] && continue
+    rm -r "${_arch}"
+  done
+
+  # remove files already in linux-docs package
+  rm -r "${_builddir}/Documentation"
+
+  # remove now broken symlinks
+  find -L "${_builddir}" -type l -printf 'Removing %P\n' -delete
+
+  # Fix permissions
+  chmod -R u=rwX,go=rX "${_builddir}"
+
+  # strip scripts directory
+  local _binary _strip
+  while read -rd '' _binary; do
+    case "$(file -bi "${_binary}")" in
+      *application/x-sharedlib*)  _strip="${STRIP_SHARED}"   ;; # Libraries (.so)
+      *application/x-archive*)    _strip="${STRIP_STATIC}"   ;; # Libraries (.a)
+      *application/x-executable*) _strip="${STRIP_BINARIES}" ;; # Binaries
+      *) continue ;;
+    esac
+    /usr/bin/strip ${_strip} "${_binary}"
+  done < <(find "${_builddir}/scripts" -type f -perm -u+w -print0 2>/dev/null)
 }
 
 _package-chromebook() {
@@ -298,16 +275,19 @@ for _p in ${pkgname[@]}; do
   }"
 done
 
-md5sums=('SKIP'
-         '1f02c29ddcc178dd40cf029bbf5565cf'
-         '6f246601cdecde127ebed315ef43c160'
-         '5e381b69c3489bee2b3a4b9fdb13341c'
-         'b0915e4cb58dea29468a2c6f8ec1293d'
-         '133715eeef64488a09d1d9ad7040e0e8'
-         '18410bb9deae2a96adee56bc095ace3a'
-         '04da90e80f4e688737bc5fdd559bc0fd'
-         '115109b6746ab011dcc05e85959a30c0'
-         '32fd9f4595caebff5c761d336af19bc8'
+md5sums=('ce9b2d974d27408a61c53a30d3f98fb9'
+         '3a6f13b036982874af4300584a81b8ba'
+         'c7011ad3ed57234f554f044f59ba01b0'
+         '8741125da5769dec5e2e677e79921873'
+         'c73bd92dfb373cfe747b37388ab79215'
+         'e25db57fa5c4068a4f488d8e60fcf952'
+         '1d740e2ebda8f1cfe3f7f6ac3ec87d8d'
+         'f33ddfc782a5efbad6a6a1f8e11328ed'
+         'a30ab4aecf7d39a5643f390ccda3c6d3'
+         '5ab56d2bf2422714f82e586d1440a835'
+         '20ce2ab46d910316fe00e70ddfb06130'
+         'b209fbb5ea8c5eecb9afa7b77c450f7f'
+         '970377d1a6b74d57a70c51ae9b88a422'
          '9751afcc5d59bf5d34561efbe7fc1fec'
          '61c5ff73c136ed07a7aadbf58db3d96a'
          '584777ae88bce2c5659960151b64c7d8'
