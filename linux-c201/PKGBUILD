@@ -10,7 +10,7 @@ pkgbase=linux-c201
 _srcname=linux-5.4
 _kernelname=${pkgbase#linux}
 _desc="ARMv7 multi-platform"
-pkgver=5.4.34
+pkgver=5.4.36
 pkgrel=1
 rcnver=5.4.34
 rcnrel=armv7-x24
@@ -276,7 +276,7 @@ for _p in ${pkgname[@]}; do
 done
 
 md5sums=('ce9b2d974d27408a61c53a30d3f98fb9'
-         '3a6f13b036982874af4300584a81b8ba'
+         'a929b45702e2baa466b9d63e3f9bd92c'
          'c7011ad3ed57234f554f044f59ba01b0'
          '8741125da5769dec5e2e677e79921873'
          'c73bd92dfb373cfe747b37388ab79215'
