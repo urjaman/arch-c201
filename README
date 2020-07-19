@@ -8,10 +8,18 @@ If you have this driver that arch-arm "provides", get rid of it:
 pacman -R xf86-video-armsoc-rockchip
 
 You likely want just the modesetting driver that comes with xorg, it's
-pretty good and has multi-head support, but you wil need to disable glamor
-for now - there is a xorg.conf.d fragment for that in this repo
+pretty good and has multi-head support.
 
-(There is also the fbturbo driver, that does work but no multi-head...)
+I mostly run a relatively recent mesa (from git master),
+so I don't keep track of how good the arch shipped mesa's panfrost is.
+I'd expect you get an usable desktop, but I do still recommend a mesa
+built from git instead.
+
+In case of GL trouble this repo does have a xorg.conf.d fragment showing
+how to disable glamor, but I hope you won't need that :)
+
+(There is also the fbturbo driver, that does work but no multi-head,
+and i dont know but I'd expect no GL either...)
 
 # Sound
 i made a systemd service for running alsaucm so you hopefully dont burn your speakers.
