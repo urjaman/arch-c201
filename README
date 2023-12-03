@@ -10,10 +10,7 @@ pacman -R xf86-video-armsoc-rockchip
 You likely want just the modesetting driver that comes with xorg, it's
 pretty good and has multi-head support.
 
-I mostly run a relatively recent mesa (from git master),
-so I don't keep track of how good the arch shipped mesa's panfrost is.
-I'd expect you get an usable desktop, but I do still recommend a mesa
-built from git instead.
+Mesa from the arch repos should work for OpenGL support.
 
 In case of GL trouble this repo does have a xorg.conf.d fragment showing
 how to disable glamor, but I hope you won't need that :)
@@ -28,7 +25,7 @@ i made a systemd service for running alsaucm so you hopefully dont burn your spe
 if you want to run that, copy the ROCKCHIPI2S alsa ucm
 data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented out there)
 
-## Mainline (4.x/5.x)
+## Mainline (4.x/5.x/6.x)
 The upstream alsa ucm files should be ok.
 
 # Wifi
@@ -41,9 +38,19 @@ chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
 Tada. Idk if that'll work but maybe :P
 
 # Kernels
-I have a relatively stable (and rarely updated) kernel that you can use as a base
-if you like in linux-c201, and i might be testing something with the PKGBUILD in
-linux-test but that could also be abandoned at any point.
+(the linux-* folders here are quite abandoned, but are the original place for the kernel...)
+I'll preface this that whilst these are what I run, I don't have the resources to do support.
+
+Currently my C201 kernel is a 6.1.x (with some patches) built by my automated scripts
+There's a copy of the scripts at https://github.com/urjaman/kbb
+The built packages are at https://urja.dev/kbbpkgs/armv7h/
+- or add this to pacman.conf:
+[kbbpkgs]
+SigLevel = Optional
+Server = https://urja.dev/kbbpkgs/armv7h/
+
+Do a sync (pacman -Syu) and install linux-c201 and unless you have u-boot
+you also want linux-c201-chromebook.
 
 # Backlight (and volume) controls
 I have an udev ruleset to make it accessible for video group members,
