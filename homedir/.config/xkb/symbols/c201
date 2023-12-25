@@ -45,6 +45,16 @@ xkb_symbols "basic" {
 	key <FK08> {[ XF86AudioMute, XF86AudioMute, F8, F8 ]};
 	key <FK09> {[ XF86AudioLowerVolume, XF86AudioLowerVolume, F9, F9 ]};
 	key <FK10> {[ XF86AudioRaiseVolume, XF86AudioRaiseVolume, F10, F10 ]};
+
+	// Since we get rid of the "normal" (left win/Meta) behaviour
+	// of the Search key, you might want to have a working Meta key
+	// elsewhere.
+	// Comment the following out to have it be the right alt key.
+	// You can read through /usr/share/X11/xkb/symbols/altwin
+	// for how it is done, etc.
+	
+	// include "altwin(swap_ralt_rwin)"                                        
+
 };
 
 

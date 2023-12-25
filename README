@@ -12,6 +12,8 @@ under wayland (X11 setxkbmap and folks don't look there by default).
 For reference, this is how i managed to test the compilation of it
 (in a wayland terminal with Xwayland available, in the home directory):
 $ setxkbmap -print c201 usfibadesc | xkbcomp -I.config/xkb -
+Note: this compiles the keymap to a file named stdin.xkm (just so you
+know what that is, just rm it.)
 
 To use it, i set these environment variables before running startplasma-wayland
 $ export XKB_DEFAULT_LAYOUT=c201
