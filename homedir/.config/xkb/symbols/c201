@@ -1,0 +1,67 @@
+default partial alphanumeric_keys modifier_keys
+xkb_symbols "basic" {
+	include "us(basic)"
+	name[Group1] = "C201 (US)";
+
+	// Make the Search key (left win) the AltGr/Level3 key
+	include "level3(lwin_switch)"
+
+	// €
+	include "eurosign(e)"
+
+	// µ
+	key <AB07> {[  m,  M,  mu, emdash ]};
+
+	// ChromeOS-like keys
+	key <AB09> {[ period, greater, Insert, Insert ]};
+	key <UP>   {[ Up, NoSymbol, Prior ]};
+	key <DOWN> {[ Down, NoSymbol, Next ]};
+	key <LEFT> {[ Left, NoSymbol, Home ]};
+	key <RGHT> {[ Right, NoSymbol, End ]};
+
+	key <BKSP> {[ BackSpace, BackSpace, Delete, Delete ]};
+
+	key <AE01> {[ 1, exclam, F1, F1 ]};
+	key <AE02> {[ 2, at, F2, F2 ]};
+	key <AE03> {[ 3, numbersign, F3, F3 ]};
+	key <AE04> {[ 4, dollar, F4, F4 ]};
+	key <AE05> {[ 5, percent, F5, F5 ]};
+	key <AE06> {[ 6, asciicircum, F6, F6 ]};
+	key <AE07> {[ 7, ampersand, F7, F7 ]};
+	key <AE08> {[ 8, asterisk, F8, F8 ]};
+	key <AE09> {[ 9, parenleft, F9, F9 ]};
+	key <AE10> {[ 0, parenright, F10, F10 ]};
+	key <AE11> {[ minus, underscore, F11, F11 ]};
+	key <AE12> {[ equal, plus, F12, F12 ]};
+
+	key <FK01> {[ XF86Back, XF86Back, F1, F1 ]};
+	key <FK02> {[ XF86Forward, XF86Forward, F2, F2 ]};
+	key <FK03> {[ F5, F5, F3, F3 ]};
+	key <FK04> {[ F11, F11, F4, F4 ]};
+	// Uhh.. you can use "F5" (the "overview" symbol key) for an Alt-F4 :P
+	key <FK05> {[ F4, F4, F5, F5 ]};
+	key <FK06> {[ XF86MonBrightnessDown, XF86MonBrightnessDown, F6, F6 ]};
+	key <FK07> {[ XF86MonBrightnessUp, XF86MonBrightnessUp, F7, F7 ]};
+	key <FK08> {[ XF86AudioMute, XF86AudioMute, F8, F8 ]};
+	key <FK09> {[ XF86AudioLowerVolume, XF86AudioLowerVolume, F9, F9 ]};
+	key <FK10> {[ XF86AudioRaiseVolume, XF86AudioRaiseVolume, F10, F10 ]};
+};
+
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "usfi" {
+	include "c201(basic)"
+	name[Group1] = "C201 (US in FI)";
+
+	key <AD11> {[ bracketleft, braceleft, aring, Aring ]};
+	key <AC10> {[ semicolon, colon, odiaeresis, Odiaeresis ]};
+	key <AC11> {[ apostrophe, quotedbl, adiaeresis, Adiaeresis ]};
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "usfibadesc" {
+	include "c201(usfi)"
+	name[Group1] = "Old C201";
+
+	key <TLDE> {[ grave, asciitilde, Escape, Escape ]};
+};

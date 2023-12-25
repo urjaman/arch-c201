@@ -1,7 +1,34 @@
 This is just assorted stuff i have for having a more usable system on _my_ C201 w/ arch...
 ---
 
-For keyboard: i have my .Xmodmap in this repo... note that i'm finnish with US keyboard C201s :P
+# Keyboard
+For Xorg: i have my .Xmodmap in this repo... note that i'm finnish with US keyboard C201s :P
+
+For Wayland / KDE Plasma:
+I have an xkb file deep in homedir/.config/xkb; it's roughly the same as the
+.Xmodmap but in XKB language - loading XKB files from ~/.config only works
+under wayland (X11 setxkbmap and folks don't look there by default).
+
+For reference, this is how i managed to test the compilation of it
+(in a wayland terminal with Xwayland available, in the home directory):
+$ setxkbmap -print c201 usfibadesc | xkbcomp -I.config/xkb -
+
+To use it, i set these environment variables before running startplasma-wayland
+$ export XKB_DEFAULT_LAYOUT=c201
+$ export XKB_DEFAULT_VARIANT=usfibadesc
+
+Skip setting the variant for standard US layout, or use "usfi" for
+US layout plus öäå in Search-;'[, or usfibadesc for that plus Escape
+in Search-~ (yep my C201 is falling apart).
+
+To have the graphical UIs list these layouts and variants, i would
+need to edit XML. Eww. So, I just set it with env vars instead.
+
+Modifying/extending XKB files is quite ... weird, but also way better than .Xmodmap;
+i hope they will make setxkbmap and folks look in ~/.config too, soon.
+Here's the link that helped me most: 
+https://github.com/xkbcommon/libxkbcommon/blob/master/doc/user-configuration.md
+(in addition to just me grepping around /usr/share/X11/xkb for examples)
 
 # Xorg
 If you have this driver that arch-arm "provides", get rid of it:
