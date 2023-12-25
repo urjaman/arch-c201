@@ -58,13 +58,15 @@ data from ChromeOS and adjust alsaucm-setup.service accordingly (it's commented 
 The upstream alsa ucm files should be ok.
 
 # Wifi
-For blobby wifi: copy the brcm firmware incl. the .txt from ChromeOS, namely these files:
-/lib/firmware/brcm/brcmfmac4354-sdio.bin 
-/lib/firmware/brcm/brcmfmac4354-sdio.txt
-(linux-firmware had a different bin and no .txt (that i guess was necessary), but i decided to trust ChromeOS instead...)
-linux-firmware updates will likely walk over the bin though, ugh.
-chattr +i /lib/firmware/brcm/brcmfmac4354-sdio.bin
-Tada. Idk if that'll work but maybe :P
+linux-firmware has the firmware (.bin) but not the configuration (.txt);
+i decided to put the things that linux firmware doesn't have
+(the wifi .txt and the bluetooth patchfile) into lib-firmware.
+
+# Bluetooth
+Since my 6.1.69-2 (as in, just right now), bluetooth should just work(TM),
+if you put the *.hcd from lib-firmware into /lib/firmware, and run that kernel.
+(You will need to install and configure the normal amount of bt stuff,
+but just read the arch wiki for that.)
 
 # Kernels
 (the linux-* folders here are quite abandoned, but are the original place for the kernel...)
