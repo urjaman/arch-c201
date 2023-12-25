@@ -59,8 +59,11 @@ The upstream alsa ucm files should be ok.
 
 # Wifi
 linux-firmware has the firmware (.bin) but not the configuration (.txt);
-i decided to put the things that linux firmware doesn't have
-(the wifi .txt and the bluetooth patchfile) into lib-firmware.
+I decided to put the things from CrOS lib/firmware/brcm that linux-firmware
+doesn't have (the wifi .txt and the bluetooth patchfile) into lib-firmware.
+License? Do crime, be gay. Also, i think atleast the .txt
+qualifies as facts that are not copyrightable.
+(same might be true for the .hcd, *shrug*)
 
 # Bluetooth
 Since my 6.1.69-2 (as in, just right now), bluetooth should just work(TM),
